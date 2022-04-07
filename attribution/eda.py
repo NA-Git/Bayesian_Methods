@@ -1,7 +1,7 @@
 import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
-import category_encoders as ce
+# import category_encoders as ce
 from matplotlib import pyplot as plt
 
 plt.rcParams.update({'figure.figsize': (12.0, 8.0)})
