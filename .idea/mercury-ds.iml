@@ -6,6 +6,12 @@
     <orderEntry type="sourceFolder" forTests="false" />
   </component>
   <component name="PackageRequirementsSettings">
-    <option name="requirementsPath" value="" />
+    <option name="requirementsPath" value="C:\Users\norri\anaconda3\pkgs\pip-21.2.4-py39haa95532_0\Lib\site-packages\pip\_internal\resolution\resolvelib\requirements.py" />
+  </component>
+  <component name="PyDocumentationSettings">
+    <option name="renderExternalDocumentation" value="true" />
+  </component>
+  <component name="TestRunnerService">
+    <option name="PROJECT_TEST_RUNNER" value="Nosetests" />
   </component>
 </module>
