@@ -2,19 +2,18 @@
 <module type="PYTHON_MODULE" version="4">
   <component name="NewModuleRootManager">
     <content url="file://$MODULE_DIR$" />
-    <orderEntry type="jdk" jdkName="Python 3.8 (Attribution_EDA)" jdkType="Python SDK" />
+    <orderEntry type="jdk" jdkName="Python 3.8 (mercury-ds)" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
   </component>
   <component name="PackageRequirementsSettings">
     <option name="requirementsPath" value="C:\Users\norri\anaconda3\pkgs\pip-21.2.4-py39haa95532_0\Lib\site-packages\pip\_internal\resolution\resolvelib\requirements.py" />
   </component>
   <component name="PyDocumentationSettings">
-    <option name="format" value="NUMPY" />
-    <option name="myDocStringFormat" value="NumPy" />
     <option name="renderExternalDocumentation" value="true" />
   </component>
   <component name="ReSTService">
     <option name="DOC_DIR" value="$USER_HOME$/anaconda3/pkgs/sphinx-4.2.0-pyhd3eb1b0_1/site-packages/sphinx/environment" />
+    <option name="TXT_IS_RST" value="true" />
   </component>
   <component name="TestRunnerService">
     <option name="PROJECT_TEST_RUNNER" value="py.test" />
