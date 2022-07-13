@@ -12,20 +12,15 @@
 #### Step 0: Setup environment
 
 ## Install, load, and check (latest) version
-install.packages("Robyn")
-# I suggest download from the h2o website and installing it via
-# local directory
 # install.packages("C:/Users/norri/Downloads/h2o_3.36.1.2.zip",
 #                  repos = NULL, type = "source")
-library(h2o)
-h2o.init()
-library(Robyn) # remotes::install_github("facebookexperimental/Robyn/R")
-
-# Please, check if you have installed the latest version before running this demo. Update if not
-# https://github.com/facebookexperimental/Robyn/blob/main/R/DESCRIPTION#L4
-packageVersion("Robyn")
+# install.packages("reticulate") # Install reticulate first if you haven't already
 
 library("reticulate")
+library(h2o)
+library(Robyn) 
+library("reticulate")
+h2o.init()
 conda_create("r-reticulate")
 conda_install("r-reticulate", "nevergrad", pip=TRUE)
 use_condaenv("r-reticulate")
@@ -33,32 +28,6 @@ use_condaenv("r-reticulate")
 # ## Force multicore when using RStudio
 Sys.setenv(R_FUTURE_FORK_ENABLE="true")
 options(future.fork.enable = TRUE)
-# 
-# ## Must install the python library Nevergrad once
-# ## ATTENTION: The latest Python 3.10 version may cause Nevergrad installation error
-# ## See here for more info about installing Python packages via reticulate
-# ## https://rstudio.github.io/reticulate/articles/python_packages.html
-# 
-# install.packages("reticulate") # Install reticulate first if you haven't already
-library("reticulate") # Load the library
-
-## Option 1: nevergrad installation via PIP (no additional installs)
-
-## In case nevergrad still can't be installed,
-# Sys.setenv(RETICULATE_PYTHON = "~/.virtualenvs/r-reticulate/bin/python")
-# # Reset your R session and re-install Nevergrad with option 1
-# 
-# # Option 2: nevergrad installation via conda (must have conda installed)
-# conda_create("r-reticulate", "Python 3.9") # Only works with <= Python 3.9 sofar
-# use_condaenv("r-reticulate")
-# conda_install("r-reticulate", "nevergrad", pip=TRUE)
-# py_config() # Check your python version and configurations
-## In case nevergrad still can't be installed,
-## please locate your python file and run this line with your path:
-# use_python("~/Library/r-miniconda/envs/r-reticulate/bin/python3.9")
-# Alternatively, force Python path for reticulate with this:
-# Sys.setenv(RETICULATE_PYTHON = "~/Library/r-miniconda/envs/r-reticulate/bin/python3.9")
-# Finally, reset your R session and re-install Nevergrad with option 2
 
 # Check this issue for more ideas to debug your reticulate/nevergrad issues:
 # https://github.com/facebookexperimental/Robyn/issues/189
@@ -70,25 +39,21 @@ library("reticulate") # Load the library
 data("dt_simulated_weekly")
 head(dt_simulated_weekly)
 
-## Check holidays from Prophet
-# 59 countries included. If your country is not included, please manually add it.
-# Tipp: any events can be added into this table, school break, events etc.
+## Check holidays from Prophet and select from your country
 data("dt_prophet_holidays")
 head(dt_prophet_holidays)
 
-## Set robyn_object. It must have extension .RDS. The object name can be different than Robyn:
+## Set robyn_object. It must have extension .RDS. The object name can 
+# be different than Robyn, but ideally should not be moved
 robyn_object <- "C:/Users/norri/Desktop/MyRobyn.RDS"
 
 ################################################################
 #### Step 2a: For first time user: Model specification in 4 steps
 
 #### 2a-1: First, specify input variables
+#??? If you have a dataset with similar inputs but different names
+# I susggest making a mapping file and changing the names in your data
 
-## -------------------------------- NOTE v3.6.0 CHANGE !!! ---------------------------------- ##
-## All sign control are now automatically provided: "positive" for media & organic variables
-## and "default" for all others. User can still customise signs if necessary. Documentation
-## is available in ?robyn_inputs
-## ------------------------------------------------------------------------------------------ ##
 InputCollect <- robyn_inputs(
   dt_input = dt_simulated_weekly
   ,dt_holidays = dt_prophet_holidays
@@ -136,19 +101,19 @@ plot_saturation(plot = TRUE)
 
 ## 3. Hyperparameter interpretation & recommendation:
 
-## Geometric adstock: Theta is the only parameter and means fixed decay rate. Assuming TV
-# spend on day 1 is 100€ and theta = 0.7, then day 2 has 100*0.7=70€ worth of effect
-# carried-over from day 1, day 3 has 70*0.7=49€ from day 2 etc. Rule-of-thumb for common
-# media genre: TV c(0.3, 0.8), OOH/Print/Radio c(0.1, 0.4), digital c(0, 0.3)
+###??? Geometric adstock: Theta is the only parameter and means fixed decay rate. Assuming TV
+###??? spend on day 1 is 100€ and theta = 0.7, then day 2 has 100*0.7=70€ worth of effect
+###??? carried-over from day 1, day 3 has 70*0.7=49€ from day 2 etc. Rule-of-thumb for common
+###? media genre: TV c(0.3, 0.8), OOH/Print/Radio c(0.1, 0.4), digital c(0, 0.3)
 
-## Weibull CDF adstock: The Cumulative Distribution Function of Weibull has two parameters
+###??? Weibull CDF adstock: The Cumulative Distribution Function of Weibull has two parameters
 # , shape & scale, and has flexible decay rate, compared to Geometric adstock with fixed
 # decay rate. The shape parameter controls the shape of the decay curve. Recommended
 # bound is c(0.0001, 2). The larger the shape, the more S-shape. The smaller, the more
 # L-shape. Scale controls the inflexion point of the decay curve. We recommend very
 # conservative bounce of c(0, 0.1), because scale increases the adstock half-life greatly.
 
-## Weibull PDF adstock: The Probability Density Function of the Weibull also has two
+###??? Weibull PDF adstock: The Probability Density Function of the Weibull also has two
 # parameters, shape & scale, and also has flexible decay rate as Weibull CDF. The
 # difference is that Weibull PDF offers lagged effect. When shape > 2, the curve peaks
 # after x = 0 and has NULL slope at x = 0, enabling lagged effect and sharper increase and
@@ -165,7 +130,7 @@ plot_saturation(plot = TRUE)
 # in hyperparameter spaces for Nevergrad to explore, it also requires larger iterations
 # to converge.
 
-## Hill function for saturation: Hill function is a two-parametric function in Robyn with
+###??? Hill function for saturation: Hill function is a two-parametric function in Robyn with
 # alpha and gamma. Alpha controls the shape of the curve between exponential and s-shape.
 # Recommended bound is c(0.5, 3). The larger the alpha, the more S-shape. The smaller, the
 # more C-shape. Gamma controls the inflexion point. Recommended bounce is c(0.3, 1). The
@@ -180,36 +145,40 @@ hyperparameters <- list(
   facebook_S_alphas = c(0.5, 3)
   ,facebook_S_gammas = c(0.3, 1)
   ,facebook_S_thetas = c(0, 0.3)
-  
+
   ,print_S_alphas = c(0.5, 3)
   ,print_S_gammas = c(0.3, 1)
   ,print_S_thetas = c(0.1, 0.4)
-  
+
   ,tv_S_alphas = c(0.5, 3)
   ,tv_S_gammas = c(0.3, 1)
   ,tv_S_thetas = c(0.3, 0.8)
-  
+
   ,search_S_alphas = c(0.5, 3)
   ,search_S_gammas = c(0.3, 1)
   ,search_S_thetas = c(0, 0.3)
-  
+
   ,ooh_S_alphas = c(0.5, 3)
   ,ooh_S_gammas = c(0.3, 1)
   ,ooh_S_thetas = c(0.1, 0.4)
-  
+
   ,newsletter_alphas = c(0.5, 3)
   ,newsletter_gammas = c(0.3, 1)
   ,newsletter_thetas = c(0.1, 0.4)
 )
 
 # Example hyperparameters ranges for Weibull CDF adstock
-facebook_S_alphas = c(0.5, 3)
-facebook_S_gammas = c(0.3, 1)
-facebook_S_shapes = c(0.0001, 2)
-facebook_S_scales = c(0, 0.1)
+
+
+# facebook_S_alphas = c(0.5, 3)
+# facebook_S_gammas = c(0.3, 1)
+# facebook_S_shapes = c(0.0001, 2)
+# facebook_S_scales = c(0, 0.1)
 
 # Example hyperparameters ranges for Weibull PDF adstock
-# facebook_S_alphas = c(0.5, 3
+
+
+# facebook_S_alphas = c(0.5, 3)
 # facebook_S_gammas = c(0.3, 1)
 # facebook_S_shapes = c(0.0001, 10)
 # facebook_S_scales = c(0, 0.1)
@@ -259,6 +228,7 @@ InputCollect <- robyn_inputs(InputCollect = InputCollect, calibration_input = ca
 #### Step 2b: For known model specification, setup in one single step
 
 ## Specify hyperparameters as in 2a-2 and optionally calibration as in 2a-4 and provide them directly in robyn_inputs()
+###? Note that any hyperparameters changed above need to be used here
 
 InputCollect <- robyn_inputs(
   dt_input = dt_simulated_weekly
@@ -286,7 +256,7 @@ InputCollect <- robyn_inputs(
 ## Run all trials and iterations. Use ?robyn_run to check parameter definition
 OutputModels <- robyn_run(
   InputCollect = InputCollect # feed in all model specification
-  #, cores = NULL # default
+  #, cores = NULL # default ??? Test tese functions
   #, add_penalty_factor = FALSE # Untested feature. Use with caution.
   , iterations = 2000 # recommended for the dummy dataset
   , trials = 5 # recommended for the dummy dataset
@@ -317,7 +287,7 @@ OutputCollect <- robyn_run(
   #, cores = NULL
   , iterations = 200
   , trials = 2
-  #, add_penalty_factor = FALSE
+  #, add_penalty_factor = FALSE # Test this functionality
   , outputs = TRUE
   , pareto_fronts = 3
   , csv_out = "pareto"
@@ -358,7 +328,8 @@ plot(ExportedModel)
 
 ## Budget allocation result requires further validation. Please use this recommendation with caution.
 ## Don't interpret budget allocation result if selected model above doesn't meet business expectation.
-
+###??? Look at any and all suggestions to see if the recomendations make sense;
+# On occasions, they suggest dropping spend on the holidays and even no ad spend
 # Check media summary for selected model
 print(ExportedModel)
 
@@ -480,6 +451,8 @@ plot(AllocatorCollect)
 
 ################################################################
 #### Step 8: get marginal returns
+
+###??? Can take hours to run
 
 ## Example of how to get marginal ROI of next 1000$ from the 80k spend level for search channel
 
