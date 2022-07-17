@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$USER_HOME$/DataspellProjects/attribution/.idea/attribution.iml" filepath="$USER_HOME$/DataspellProjects/attribution/.idea/attribution.iml" />
+      <module fileurl="file://$USER_HOME$/DataspellProjects/dsProject/.idea/dsProject.iml" filepath="$USER_HOME$/DataspellProjects/dsProject/.idea/dsProject.iml" />
+      <module fileurl="file://$APPLICATION_CONFIG_DIR$/projects/mercury-ds/.idea/mercury-ds.iml" filepath="$APPLICATION_CONFIG_DIR$/projects/mercury-ds/.idea/mercury-ds.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/workspace.iml" filepath="$PROJECT_DIR$/.idea/workspace.iml" />
+    </modules>
+  </component>
+</project>
