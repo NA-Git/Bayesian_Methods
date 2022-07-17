@@ -1,7 +1,7 @@
-# install.packages('prophet')
-# install.packages('timeDate')
-# install.packages('dplyr')
-# install.packages('lubridate')
+install.packages('prophet')
+install.packages('timeDate')
+install.packages('dplyr')
+install.packages('lubridate')
 
 library('prophet')
 library('dplyr')
