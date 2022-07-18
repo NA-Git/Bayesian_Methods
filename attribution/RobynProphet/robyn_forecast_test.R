@@ -1,13 +1,3 @@
-# Copyright (c) Meta Platforms, Inc. and its affiliates.
-
-# This source code is licensed under the MIT license found in the
-# LICENSE file in the root directory of this source tree.
-
-#############################################################################################
-####################         Facebook MMM Open Source - Robyn 3.6.4    ######################
-####################                    Quick guide                   #######################
-#############################################################################################
-
 ################################################################
 #### Step 0: Setup environment
 
@@ -15,11 +5,12 @@
 # install.packages("C:/Users/norri/Downloads/h2o_3.36.1.2.zip",
 #                  repos = NULL, type = "source")
 # install.packages("reticulate") # Install reticulate first if you haven't already
+# install.packages('tidyr')
 
+library(tidyr)
 library("reticulate")
 library(h2o)
 library(Robyn) 
-library("reticulate")
 h2o.init()
 conda_create("r-reticulate")
 conda_install("r-reticulate", "nevergrad", pip=TRUE)
@@ -36,42 +27,46 @@ options(future.fork.enable = TRUE)
 #### Step 1: Load data
 
 ## Check simulated dataset or load your own dataset
-data("dt_simulated_weekly")
-head(dt_simulated_weekly)
+# data("dt_simulated_weekly")
+# write.csv(dt_simulated_weekly,"G:/My Drive/To_Do/IN_DS/Robyn/sim_weekly_data.csv", 
+#           row.names = FALSE)
+
+df <- read.csv('G:/My Drive/To_Do/IN_DS/Robyn/robyn_tyson_a.csv')
 
 ## Check holidays from Prophet and select from your country
 data("dt_prophet_holidays")
 head(dt_prophet_holidays)
+dt_prophet_holidays <- dt_prophet_holidays[dt_prophet_holidays$country == 'US', ]
 
 ## Set robyn_object. It must have extension .RDS. The object name can 
 # be different than Robyn, but ideally should not be moved
-robyn_object <- "C:/Users/norri/Desktop/MyRobyn.RDS"
+robyn_object <- "G:/My Drive/To_Do/IN_DS/Robyn/MyRobyn.RDS"
 
 ################################################################
 #### Step 2a: For first time user: Model specification in 4 steps
 
 #### 2a-1: First, specify input variables
 #??? If you have a dataset with similar inputs but different names
-# I susggest making a mapping file and changing the names in your data
+#??? I susggest making a mapping file and changing the names in your data
 
 InputCollect <- robyn_inputs(
-  dt_input = dt_simulated_weekly
+  dt_input = df
   ,dt_holidays = dt_prophet_holidays
   ,date_var = "DATE" # date format must be "2020-01-01"
   ,dep_var = "revenue" # there should be only one dependent variable
   ,dep_var_type = "revenue" # "revenue" (ROI) or "conversion" (CPA)
   ,prophet_vars = c("trend", "season", "holiday") # "trend","season", "weekday" & "holiday"
-  ,prophet_country = "DE"# input one country. dt_prophet_holidays includes 59 countries by default
+  ,prophet_country = "US"# input one country of dt_prophet_holidays 
   ,context_vars = c("competitor_sales_B", "events") # e.g. competitors, discount, unemployment etc
-  ,paid_media_spends = c("tv_S","ooh_S",	"print_S"	,"facebook_S", "search_S") # mandatory input
-  ,paid_media_vars = c("tv_S", "ooh_S"	,	"print_S"	,"facebook_I" ,"search_clicks_P") # mandatory.
+  ,paid_media_spends = c("disp_S","event_S",	"email_S"	,"sm_S", "influence_S") # mandatory input
+  ,paid_media_vars = c("disp_S", "event_S"	,	"email_S"	,"app_S" ,"banner_S") # mandatory.
   # paid_media_vars must have same order as paid_media_spends. Use media exposure metrics like
   # impressions, GRP etc. If not applicable, use spend instead.
-  ,organic_vars = c("newsletter") # marketing activity without media spend
+  ,organic_vars = c("circular_S") # marketing activity without media spend
   ,factor_vars = c("events") # specify which variables in context_vars or organic_vars are factorial
-  ,window_start = "2016-11-23"
-  ,window_end = "2018-08-22"
-  ,adstock = "geometric" # geometric, weibull_cdf or weibull_pdf.
+  ,window_start = "2019-12-08"
+  ,window_end = "2022-04-17"
+  ,adstock = "weibull_pdf" # geometric, weibull_cdf or weibull_pdf.
 )
 print(InputCollect)
 # ?robyn_inputs for more info
@@ -139,49 +134,37 @@ plot_saturation(plot = TRUE)
 ## 4. Set individual hyperparameter bounds. They either contain two values e.g. c(0, 0.5),
 # or only one value, in which case you'd "fix" that hyperparameter.
 
-# Run hyper_limits() to check maximum upper and lower bounds by range
-# Example hyperparameters ranges for Geometric adstock
 hyperparameters <- list(
-  facebook_S_alphas = c(0.5, 3)
-  ,facebook_S_gammas = c(0.3, 1)
-  ,facebook_S_thetas = c(0, 0.3)
-
-  ,print_S_alphas = c(0.5, 3)
-  ,print_S_gammas = c(0.3, 1)
-  ,print_S_thetas = c(0.1, 0.4)
-
-  ,tv_S_alphas = c(0.5, 3)
-  ,tv_S_gammas = c(0.3, 1)
-  ,tv_S_thetas = c(0.3, 0.8)
-
-  ,search_S_alphas = c(0.5, 3)
-  ,search_S_gammas = c(0.3, 1)
-  ,search_S_thetas = c(0, 0.3)
-
-  ,ooh_S_alphas = c(0.5, 3)
-  ,ooh_S_gammas = c(0.3, 1)
-  ,ooh_S_thetas = c(0.1, 0.4)
-
-  ,newsletter_alphas = c(0.5, 3)
-  ,newsletter_gammas = c(0.3, 1)
-  ,newsletter_thetas = c(0.1, 0.4)
+  sm_S_alphas = c(0.5, 3)
+  ,sm_S_gammas = c(0.3, 1)
+  ,sm_S_shapes = c(.001, 0.3)
+  ,sm_S_scales = c(0, 0.1)
+  
+  ,email_S_alphas = c(0.5, 3)
+  ,email_S_gammas = c(0.3, 1)
+  ,email_S_shapes = c(0.1, 0.4)
+  ,email_S_scales = c(0, 0.1)
+  
+  ,disp_S_alphas = c(0.5, 3)
+  ,disp_S_gammas = c(0.3, 1)
+  ,disp_S_shapes = c(0.3, 0.8)
+  ,disp_S_scales = c(0, 0.1)
+  
+  ,influence_S_alphas = c(0.5, 3)
+  ,influence_S_gammas = c(0.3, 1)
+  ,influence_S_shapes = c(.0010, 0.3)
+  ,influence_S_scales = c(0, 0.1)
+  
+  ,event_S_alphas = c(0.5, 3)
+  ,event_S_gammas = c(0.3, 1)
+  ,event_S_shapes = c(0.1, 0.4)
+  ,event_S_scales = c(0, 0.1)
+  
+  ,circular_S_alphas = c(0.5, 3)
+  ,circular_S_gammas = c(0.3, 1)
+  ,circular_S_shapes = c(0.1, 0.4)
+  ,circular_S_scales = c(0, 0.1)
 )
-
-# Example hyperparameters ranges for Weibull CDF adstock
-
-
-# facebook_S_alphas = c(0.5, 3)
-# facebook_S_gammas = c(0.3, 1)
-# facebook_S_shapes = c(0.0001, 2)
-# facebook_S_scales = c(0, 0.1)
-
-# Example hyperparameters ranges for Weibull PDF adstock
-
-
-# facebook_S_alphas = c(0.5, 3)
-# facebook_S_gammas = c(0.3, 1)
-# facebook_S_shapes = c(0.0001, 10)
-# facebook_S_scales = c(0, 0.1)
 
 #### 2a-3: Third, add hyperparameters into robyn_inputs()
 
@@ -207,11 +190,11 @@ print(InputCollect)
 ## ------------------------------------------------------------------------------------------ ##
 calibration_input <- data.frame(
   # channel name must in paid_media_vars
-  channel = c("facebook_S",  "tv_S", "facebook_S"),
+  channel = c("email_S",  "disp_S", "sm_S"),
   # liftStartDate must be within input data range
-  liftStartDate = as.Date(c("2018-05-01", "2018-04-03", "2018-07-01")),
+  liftStartDate = as.Date(c("2019-12-08", "2019-12-08", "2019-12-08")),
   # liftEndDate must be within input data range
-  liftEndDate = as.Date(c("2018-06-10", "2018-06-03", "2018-07-20")),
+  liftEndDate = as.Date(c("2022-04-17", "2022-04-17", "2022-04-17")),
   # Provided value must be tested on same campaign level in model and same metric as dep_var_type
   liftAbs = c(400000, 300000, 200000),
   # Spend within experiment: should match within a 10% error your spend on date range for each channel from dt_input
@@ -231,23 +214,23 @@ InputCollect <- robyn_inputs(InputCollect = InputCollect, calibration_input = ca
 ###? Note that any hyperparameters changed above need to be used here
 
 InputCollect <- robyn_inputs(
-  dt_input = dt_simulated_weekly
+  dt_input = df
   ,dt_holidays = dt_prophet_holidays
   ,date_var = "DATE"
   ,dep_var = "revenue"
   ,dep_var_type = "revenue"
   ,prophet_vars = c("trend", "season", "holiday")
-  ,prophet_country = "DE"
+  ,prophet_country = "US"
   ,context_vars = c("competitor_sales_B", "events")
-  ,paid_media_spends = c("tv_S", "ooh_S",	"print_S", "facebook_S", "search_S")
-  ,paid_media_vars = c("tv_S", "ooh_S", 	"print_S", "facebook_I", "search_clicks_P")
-  ,organic_vars = c("newsletter")
+  ,paid_media_spends = c("disp_S", "event_S",	"email_S", "sm_S", "influence_S")
+  ,paid_media_vars = c("disp_S", "event_S", 	"email_S", "app_S", "banner_S")
+  ,organic_vars = c("circular_S")
   ,factor_vars = c("events")
-  ,window_start = "2016-11-23"
-  ,window_end = "2018-08-22"
-  ,adstock = "geometric"
+  ,window_start = "2019-12-08"
+  ,window_end = "2022-04-17"
+  ,adstock = "weibull_pdf"
   ,hyperparameters = hyperparameters # as in 2a-2 above
-  #,calibration_input = dt_calibration # as in 2a-4 above
+  ,calibration_input = calibration_input # as in 2a-4 above
 )
 
 ################################################################
@@ -256,7 +239,7 @@ InputCollect <- robyn_inputs(
 ## Run all trials and iterations. Use ?robyn_run to check parameter definition
 OutputModels <- robyn_run(
   InputCollect = InputCollect # feed in all model specification
-  #, cores = NULL # default ??? Test tese functions
+  , cores = 8 # default ??? Test tese functions
   #, add_penalty_factor = FALSE # Untested feature. Use with caution.
   , iterations = 2000 # recommended for the dummy dataset
   , trials = 5 # recommended for the dummy dataset
@@ -273,7 +256,7 @@ OutputModels$convergence$moo_cloud_plot
 OutputCollect <- robyn_outputs(
   InputCollect, OutputModels
   , pareto_fronts = 3
-  # , calibration_constraint = 0.1 # range c(0.01, 0.1) & default at 0.1
+  , calibration_constraint = 0.1 # range c(0.01, 0.1) & default at 0.1
   , csv_out = "pareto" # "pareto" or "all"
   , clusters = TRUE # Set to TRUE to cluster similar models by ROAS. See ?robyn_clusters
   , plot_pareto = TRUE # Set to FALSE to deactivate plotting and saving model one-pagers
@@ -284,10 +267,10 @@ print(OutputCollect)
 # Run & output in one go
 OutputCollect <- robyn_run(
   InputCollect = InputCollect
-  #, cores = NULL
+  , cores = NULL
   , iterations = 200
   , trials = 2
-  #, add_penalty_factor = FALSE # Test this functionality
+  , add_penalty_factor = TRUE # Test this functionality
   , outputs = TRUE
   , pareto_fronts = 3
   , csv_out = "pareto"
@@ -313,7 +296,7 @@ print(OutputCollect)
 
 ## Compare all model one-pagers and select one that mostly reflects your business reality
 print(OutputCollect)
-select_model <- "1_12_8" # select one from above
+select_model <- "1_4_8" # select one from above
 ExportedModel <- robyn_save(
   robyn_object = robyn_object # model object location and name
   , select_model = select_model # selected model ID
@@ -344,8 +327,8 @@ AllocatorCollect1 <- robyn_allocator(
   , channel_constr_low = 0.7
   , channel_constr_up = c(1.2, 1.5, 1.5, 1.5, 1.5)
   , export = TRUE
-  , date_min = "2016-11-21"
-  , date_max = "2018-08-20"
+  , date_min = "2019-12-08"
+  , date_max = "2022-04-17"
 )
 print(AllocatorCollect1)
 plot(AllocatorCollect1)
@@ -373,7 +356,7 @@ plot(AllocatorCollect2)
 
 ## QA optimal response
 # Pick any media variable: InputCollect$all_media
-select_media <- "search_S"
+select_media <- "disp_S"
 # For paid_media_spends set metric_value as your optimal spend
 metric_value <- AllocatorCollect1$dt_optimOut[channels == select_media, optmSpendUnit]
 # # For paid_media_vars and organic_vars, manually pick a value
@@ -408,12 +391,13 @@ if (TRUE) {
 # Run ?robyn_refresh to check parameter definition
 Robyn <- robyn_refresh(
   robyn_object = robyn_object
-  , dt_input = dt_simulated_weekly
+  , dt_input = df
   , dt_holidays = dt_prophet_holidays
-  , refresh_steps = 1
+  , refresh_steps = 4
   , refresh_mode = "manual"
   , refresh_iters = 1000 # 1k is estimation. Use refresh_mode = "manual" to try out.
   , refresh_trials = 3
+  , plot_pareto = TRUE
   , clusters = FALSE
 )
 
@@ -460,7 +444,7 @@ plot(AllocatorCollect)
 
 ## -------------------------------- NOTE v3.6.0 CHANGE !!! ---------------------------------- ##
 ## The robyn_response() function can now output response for both spends and exposures (imps,
-## GRP, newsletter sendings etc.) as well as plotting individual saturation curves. New
+## GRP, circular_S sendings etc.) as well as plotting individual saturation curves. New
 ## argument names "media_metric" and "metric_value" instead of "paid_media_var" and "spend"
 ## are now used to accommodate this change. Also the returned output is a list now and
 ## contains also the plot.
@@ -471,7 +455,7 @@ Spend1 <- 60000
 Response1 <- robyn_response(
   robyn_object = robyn_object
   #, select_build = 1 # 2 means the second refresh model. 0 means the initial model
-  , media_metric = "search_S"
+  , media_metric = "influence_S"
   , metric_value = Spend1)
 Response1$response/Spend1 # ROI for search 80k
 Response1$plot
@@ -481,7 +465,7 @@ Spend2 <- Spend1 + 1000
 Response2 <- robyn_response(
   robyn_object = robyn_object
   #, select_build = 1
-  , media_metric = "search_S"
+  , media_metric = "influence_S"
   , metric_value = Spend2)
 Response2$response/Spend2 # ROI for search 81k
 Response2$plot
@@ -494,7 +478,7 @@ imps <- 50000000
 response_imps <- robyn_response(
   robyn_object = robyn_object
   #, select_build = 1
-  , media_metric = "facebook_I"
+  , media_metric = "app_S"
   , metric_value = imps)
 response_imps$response / imps * 1000
 response_imps$plot
@@ -504,7 +488,7 @@ sendings <- 30000
 response_sending <- robyn_response(
   robyn_object = robyn_object
   #, select_build = 1
-  , media_metric = "newsletter"
+  , media_metric = "circular_S"
   , metric_value = sendings)
 response_sending$response / sendings * 1000
 response_sending$plot
@@ -513,18 +497,18 @@ response_sending$plot
 #### Optional: get old model results
 
 # Get old hyperparameters and select model
-dt_hyper_fixed <- data.table::fread("~/Desktop/2022-03-31 12.32 rf4/pareto_hyperparameters.csv")
-select_model <- "1_25_9"
-dt_hyper_fixed <- dt_hyper_fixed[solID == select_model]
+# dt_hyper_fixed <- data.table::fread("~/Desktop/2022-03-31 12.32 rf4/pareto_hyperparameters.csv")
+# select_model <- "1_25_9"
+# dt_hyper_fixed <- dt_hyper_fixed[solID == select_model]
 
-OutputCollectFixed <- robyn_run(
-  # InputCollect must be provided by robyn_inputs with same dataset and parameters as before
-  InputCollect = InputCollect
-  , plot_folder = robyn_object
-  , dt_hyper_fixed = dt_hyper_fixed)
-
-# Save Robyn object for further refresh
-robyn_save(robyn_object = robyn_object
-           , select_model = select_model
-           , InputCollect = InputCollect
-           , OutputCollect = OutputCollectFixed)
+# OutputCollectFixed <- robyn_run(
+#   # InputCollect must be provided by robyn_inputs with same dataset and parameters as before
+#   InputCollect = InputCollect
+#   , plot_folder = robyn_object
+#   , dt_hyper_fixed = dt_hyper_fixed)
+# 
+# # Save Robyn object for further refresh
+# robyn_save(robyn_object = robyn_object
+#            , select_model = select_model
+#            , InputCollect = InputCollect
+#            , OutputCollect = OutputCollectFixed)
