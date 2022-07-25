@@ -4,11 +4,11 @@
     <content url="file:///home/../Python/Python39/site-packages">
       <sourceFolder url="file:///home/../Python/Python39/site-packages" isTestSource="false" />
     </content>
-    <content url="file://$MODULE_DIR$" />
-    <content url="file://$MODULE_DIR$/../../../../Python/Python39/site-packages">
-      <sourceFolder url="file://$MODULE_DIR$/../../../../Python/Python39/site-packages" isTestSource="false" />
+    <content url="file:///home/../Python/Python39/site-packages">
+      <sourceFolder url="file:///home/../Python/Python39/site-packages" isTestSource="false" />
     </content>
-    <orderEntry type="jdk" jdkName="Python 3.10 (mercury-ds)" jdkType="Python SDK" />
+    <content url="file://$MODULE_DIR$" />
+    <orderEntry type="jdk" jdkName="Python 3.8 (mercury-ds)" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
   </component>
   <component name="PackageRequirementsSettings">
