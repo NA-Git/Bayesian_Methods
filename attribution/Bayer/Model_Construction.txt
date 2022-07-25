@@ -1,0 +1,13 @@
+This file describes the creation of the initial dataset used to model coupon redemption for Bayer.
+The process was done in Alteryx.
+Monthly finance reports were provided by Bayer. Each report contained a list of coupons, issue dates, 
+and redemption numbers. The reports were combined into one large dataset. Only coupons with data
+greater than 30 days since issue were included. Three variables, two final and one intermediate, were created.
+
+1. Sum_PERIOD-QTY: contained the sum total of redemptions for each coupon for all periods.
+2. Total_Dist_Percent: each period's redemption per coupon divided by the Sum-Period-QTY.
+3. Days_Since_Issue: calculated the number of days since coupon issue.
+
+Variables 2 and 3 were used in the Python program.
+
+NOTE: the data provided was monthly. This prevented modeling the first few weeks of any given coupon, meaning coupon forecasting is only possible after 30 days. Also, after filtering criteria, some coupon types did not have enough samples for accurate modeling, and were either grouped together by similarity or defaulted to Budget Cost Life.

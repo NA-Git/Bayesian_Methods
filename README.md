@@ -1,3 +1,3 @@
 # mercury-ds
 ## Project Mercury Data Science  
-Currently the AB and Tyson EDA notebooks are current, with the Tyson notebook to develop into an initial Bayesian analysis
+Contains initial Bayesian modeling of Tyson data, AB time series, Amazon time series, testing of Robyn, Google MMM, and Prophet. Also contains Bayer redemption modeling.
