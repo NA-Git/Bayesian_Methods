@@ -2,17 +2,17 @@
 #### Step 0: Setup environment
 
 # remotes::install_github("facebookexperimental/Robyn/R")
-install.packages(c('Amelia','nloptr','lares','Robyn','dplyr','reticulate','tidyr'))
+# install.packages(c('Amelia','nloptr','lares','Robyn','dplyr','reticulate','tidyr'))
 # install.packages("reticulate") # Install reticulate first if you haven't already
+#
+# library('Amelia', 'npreg', 'dplyr', 'nloptr', 'lares', 'Robyn', 'tidyr')
+# library('reticulate', 'h2o')
+# h2o.init()
+# conda_create("r-reticulate")
+# conda_install("r-reticulate", "nevergrad", pip=TRUE)
+# use_condaenv("r-reticulate")
 
-library('Amelia', 'npreg', 'dplyr', 'nloptr', 'lares', 'Robyn', 'tidyr')
-library('reticulate', 'h2o')
-h2o.init()
-conda_create("r-reticulate")
-conda_install("r-reticulate", "nevergrad", pip=TRUE)
-use_condaenv("r-reticulate")
-
-start = Sys.time()
+start <- Sys.time()
 getwd()
 setwd("G:/My Drive/To_Do/IN_DS/Robyn")
 
@@ -26,7 +26,7 @@ options(future.fork.enable = TRUE)
 ################################################################
 #### Step 1: Load data
 
-df <- read.csv('tyson_cleaned_7_26_clean_3.csv')
+df <- read.csv('df1.csv')
 
 ## Check holidays from Prophet and select from your country
 holidays <- read.csv('holidays.csv')
@@ -61,17 +61,17 @@ names(df)[names(df) == 'Banners'] <- 'banner_m' # banner_m
 names(df)[names(df) == 'In.Store.Demo'] <- 'publicity_m' # circular_s
 
 # df['incidents'][df['incidents'] == 'na'] <- 'yes'
-df <- na.omit(df)
-df[df <- 0] <- 1 
-# not using app_coupon, beacons, digital.website, e.commerce, shopper.marketing
-#system
-df <- subset(df, select = -App_Coupon)
-df <- subset(df, select = -Beacons)
-df <- subset(df, select = -Digital.Website)
-df <- subset(df, select = -E.commerce)
-df <- subset(df, select = -Shopper.Marketing.Program)
-df <- subset(df, select = -incidents)
-df <- subset(df, select = -competitor)
+# df <- na.omit(df)
+# df[df <- 0] <- 1
+# # not using app_coupon, beacons, digital.website, e.commerce, shopper.marketing
+# #system
+# df <- subset(df, select = -App_Coupon)
+# df <- subset(df, select = -Beacons)
+# df <- subset(df, select = -Digital.Website)
+# df <- subset(df, select = -E.commerce)
+# df <- subset(df, select = -Shopper.Marketing.Program)
+# df <- subset(df, select = -incidents)
+# df <- subset(df, select = -competitor)
 
 
 # ?robyn_inputs
