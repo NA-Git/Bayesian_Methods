@@ -25,17 +25,17 @@ disperse(imp, dims = 1, m = 5)
 disperse(imp, dims = 2, m = 5)
 missmap(imp)
 
-df <- imp$imputations$imp2
+df <- imp$imputations$imp5
 summary(lm(Total.Sales ~ Digital_Equity + Coupons_Apps + Brand_Email + Banners
            + Influencers + E_Commerce + In_Store, data = df))
 
-df <- imp$imputations$imp2
-# df_temp <- df
-
+df <- imp$imputations$imp5
+df_temp <- df$Date
+df_temp <- as.POSIXct(df_temp,"%Y-%m-%d", tz = "UTC", origin="2019-10-01")
 df <- df %>%
-  select(c(Date, Digital_Equity, Coupons_Apps, Brand_Email, Banners, Influencers,
-           E_Commerce, In_Store, Total.Sales)) %>%
-  abs()
-# df <- df_temp
+  select(c(Digital_Equity, Coupons_Apps, Brand_Email, Banners,
+           Influencers, E_Commerce, In_Store, Total.Sales)) %>% abs()
+df$Date <- df_temp
+
 setwd("G:/My Drive/To_Do/IN_DS/Robyn")
 write.csv(df, file = "df1.csv", row.names = FALSE)

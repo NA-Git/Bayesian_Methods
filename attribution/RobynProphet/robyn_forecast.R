@@ -2,15 +2,16 @@
 #### Step 0: Setup environment
 
 # remotes::install_github("facebookexperimental/Robyn/R")
-# install.packages(c('Amelia','nloptr','lares','Robyn','dplyr','reticulate','tidyr'))
-# install.packages("reticulate") # Install reticulate first if you haven't already
-#
-# library('Amelia', 'npreg', 'dplyr', 'nloptr', 'lares', 'Robyn', 'tidyr')
-# library('reticulate', 'h2o')
-# h2o.init()
-# conda_create("r-reticulate")
-# conda_install("r-reticulate", "nevergrad", pip=TRUE)
-# use_condaenv("r-reticulate")
+install.packages(c('Amelia','nloptr','lares','Robyn','dplyr','reticulate','tidyr'))
+install.packages("reticulate") # Install reticulate first if you haven't already
+
+library('Amelia', 'npreg', 'dplyr', 'nloptr', 'lares',
+        'Robyn', 'tidyr')
+library('reticulate', 'h2o')
+h2o.init()
+conda_create("r-reticulate")
+conda_install("r-reticulate", "nevergrad", pip=TRUE)
+use_condaenv("r-reticulate")
 
 start <- Sys.time()
 getwd()
