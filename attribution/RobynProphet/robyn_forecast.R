@@ -106,7 +106,7 @@ InputCollect <- robyn_inputs(
   # paid_media_vars must have same order as paid_media_spends. Use media exposure metrics like
   # impressions, GRP etc. If not applicable, use spend instead.
   ,organic_vars = ("compete_g") # marketing activity without media spend
-  ,factor_vars = ("incidents") # specify which variables in context_vars or
+  # ,factor_vars = ("incidents") # specify which variables in context_vars or
   # organic_vars are factorial
   # prophet pulls in your date range from the date variable, but the window start
   # and window end require you to put in dates that are in between and smaller
@@ -211,25 +211,48 @@ new_hyper <- hyper_names(adstock = InputCollect$adstock, all_media = InputCollec
 #   ,social_m_scales = c(0, 0.1)
 #   ,social_m_shapes = c(0.0001, 10)
 # )
+#
+# hyperparameters <- list(
+#    app_m_alphas = c(0.5, 3)
+#   ,app_m_gammas = c(0.3, 1)
+#   ,app_m_scales = c(0, 0.1)
+#   ,app_m_shapes = c(0.0001, 10)
+#   ,banner_m_alphas = c(0.5, 3)
+#   ,banner_m_gammas = c(0.3, 1)
+#   ,banner_m_scales = c(0, 0.1)
+#   ,banner_m_shapes = c(0.0001, 10)
+#   ,Brand_Email_alphas = c(0.5, 3)
+#   ,Brand_Email_gammas = c(0.3, 1)
+#   ,Brand_Email_scales = c(0, 0.1)
+#   ,Brand_Email_shapes = c(0.0001, 10)
+#   ,publicity_m_alphas = c(0.5, 3)
+#   ,publicity_m_gammas = c(0.3, 1)
+#   ,publicity_m_scales = c(0, 0.1)
+#   ,publicity_m_shapes = c(0.0001, 10)
+#   )
 
 hyperparameters <- list(
-   app_m_alphas = c(0.5, 3)
-  ,app_m_gammas = c(0.3, 1)
-  ,app_m_scales = c(0, 0.1)
-  ,app_m_shapes = c(0.0001, 10)
-  ,banner_m_alphas = c(0.5, 3)
+   banner_m_alphas = c(0.5, 3)
   ,banner_m_gammas = c(0.3, 1)
   ,banner_m_scales = c(0, 0.1)
   ,banner_m_shapes = c(0.0001, 10)
-  ,Brand_Email_alphas = c(0.5, 3)
-  ,Brand_Email_gammas = c(0.3, 1)
-  ,Brand_Email_scales = c(0, 0.1)
-  ,Brand_Email_shapes = c(0.0001, 10)
-  ,publicity_m_alphas = c(0.5, 3)
-  ,publicity_m_gammas = c(0.3, 1)
-  ,publicity_m_scales = c(0, 0.1)
-  ,publicity_m_shapes = c(0.0001, 10)
-  )
+
+  ,compete_g_alphas = c(0.5, 3)
+  ,compete_g_gammas = c(0.3, 1)
+  ,compete_g_scales = c(0, 0.1)
+  ,compete_g_shapes = c(0.0001, 10)
+
+  ,digital_m_alphas = c(0.5, 3)
+  ,digital_m_gammas = c(0.3, 1)
+  ,digital_m_scales = c(0, 0.1)
+  ,digital_m_shapes = c(0.0001, 10)
+
+  ,influence_m_alphas = c(0.5, 3)
+  ,influence_m_gammas = c(0.3, 1)
+  ,influence_m_scales = c(0, 0.1)
+  ,influence_m_shapes = c(0.0001, 10)
+)
+
 #### 2a-3: Third, add hyperparameters into robyn_inputs()
 # ?robyn_inputs
 InputCollect <- robyn_inputs(InputCollect = InputCollect, hyperparameters = hyperparameters)
