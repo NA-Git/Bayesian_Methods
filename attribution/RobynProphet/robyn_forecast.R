@@ -1,3 +1,4 @@
+
 ################################################################
 #### Step 0: Setup environment
 
@@ -37,7 +38,7 @@ df <- read.csv('df1.csv')
 ## Check holidays from Prophet and select from your country
 holidays <- read.csv('holidays.csv')
 holidays <- subset(holidays, country == 'US')
-## Set robyn_object. It must have extension .RDS. The object name can 
+## Set robyn_object. It must have extension .RDS. The object name can
 # be different than Robyn, but ideally should not be moved
 robyn_object <- "C:/Users/norri/Desktop/MyRobyn.RDS"
 
@@ -50,72 +51,47 @@ robyn_object <- "C:/Users/norri/Desktop/MyRobyn.RDS"
 # is necessary to rename variables to fit; keep note of original names if you need
 # to test the dummy data
 
+df <- read.csv('df_w_econ.csv')
+# DATE
 names(df)[names(df) == "Date"] <- "DATE"
 # df$DATE <- as.POSIXct(df$DATE,"%Y-%m-%d", tz = "UTC", origin="2019-10-01")
+
+# revenue
 names(df)[names(df) == "Total.Sales"] <- "revenue"
+
+# competitor
 df$competitor_sales_b <- abs(rnorm(94, sd = 1.4)) * 1000000
 names(df)[names(df) == "competitor_sales_b"] <- "competitor" #competitor_B
+
+# incidents
 df$events <- 'na'
 names(df)[names(df) == "events"] <- "incidents" # events
-# names(df)[names(df) == 'Display...End.Cap'] <- "In_Store" # disp_s
-df$incident_m <- df$incidents # event_S
-# names(df)[names(df) == 'Brand.Email...Equity'] <- 'email_m' # email_S
-# names(df)[names(df) == 'Digital.Social.Media'] <- 'social_m' # sm_S
+df[67,13] <- 'insurrection'
+
+
+# influence_m
 names(df)[names(df) == 'Influencers'] <- 'influence_m' # influence_m
+
+# app_m
 names(df)[names(df) == 'Coupons_Apps'] <- 'app_m' # app_S
+
+# banner_m
 names(df)[names(df) == 'Banners'] <- 'banner_m' # banner_m
-names(df)[names(df) == 'In_Store'] <- 'publicity_m' # circular_s
 
+# on_foot
+names(df)[names(df) == 'In_Store'] <- 'on_foot' # circular_s
 
-# media <- c("social_m","email_m","display","influence_m","incident_m","publicity_m")
-# hyper_names(adstock = "weibull_pdf", all_media = media)
+write.csv(df, 'temp.csv')
 
-# hyperparameters <- list(
-# facebook_S_alphas = c(0.5, 3), # example bounds for alpha
-# facebook_S_gammas = c(0.3, 1), # example bounds for gamma
-# facebook_S_thetas = c(0, 0.3), # example bounds for theta
-# print_S_alphas = c(0.5, 3),
-# print_S_gammas = c(0.3, 1),
-# print_S_thetas = c(0.1, 0.4),
-# tv_S_alphas = c(0.5, 3),
-# tv_S_gammas = c(0.3, 1),
-# tv_S_thetas = c(0.3, 0.8)
-# )
-
-# Define hyper_names for weibull adstock
-# hyper_names(adstock = "weibull", all_media = media)
-#
-# hyperparameters <- list(
-# facebook_S_alphas = c(0.5, 3), # example bounds for alpha
-# facebook_S_gammas = c(0.3, 1), # example bounds for gamma
-# facebook_S_shapes = c(0.0001, 2), # example bounds for shape
-# facebook_S_scales = c(0, 0.1), # example bounds for scale
-# print_S_alphas = c(0.5, 3),
-# print_S_gammas = c(0.3, 1),
-# print_S_shapes = c(0.0001, 2),
-# print_S_scales = c(0, 0.1),
-# tv_S_alphas = c(0.5, 3),
-# tv_S_gammas = c(0.3, 1),
-# tv_S_shapes = c(0.0001, 2),
-# tv_S_scales = c(0, 0.1)
-# )
-
-
-# df['incidents'][df['incidents'] == 'na'] <- 'yes'
-# df <- na.omit(df)
-# df[df <- 0] <- 1
-# # not using app_coupon, beacons, digital.website, e.commerce, shopper.marketing
-# #system
-# df <- subset(df, select = -App_Coupon)
-# df <- subset(df, select = -Beacons)
-# df <- subset(df, select = -Digital.Website)
-# df <- subset(df, select = -E.commerce)
-# df <- subset(df, select = -Shopper.Marketing.Program)
-# df <- subset(df, select = -incidents)
-# df <- subset(df, select = -competitor)
-
-
-# ?robyn_inputs
+# df cannot have any missings or any value at 0 or below
+# the variables to be worried about are
+# date - DATE
+# revenue - revenue
+# context_vars - compete_g
+# paid_media_spends - digital_m, influence_m, banner_m
+# paid_media_vars - app_m, e_com_m, on_foot
+# organic_vars - econ_m
+# factor_vars -
 InputCollect <- robyn_inputs(
   dt_input = df
   ,dt_holidays = holidays
@@ -124,13 +100,13 @@ InputCollect <- robyn_inputs(
   ,dep_var_type = "revenue" # "revenue" (ROI) or "conversion" (CPA)
   ,prophet_vars = c("trend", "season", "holiday") # "trend","season", "weekday" & "holiday"
   ,prophet_country = "US"# input one country of dt_prophet_holidays
-  ,context_vars = ("competitor") # e.g. competitors, discount, unemployment etc
-  ,paid_media_spends = c("app_m","Brand_Email","banner_m") # mandator input
-  ,paid_media_vars = c("influence_m", "E_Commerce","Digital_Equity") # mandatory.
+  ,context_vars = ("econ_m") # e.g. competitors, discount, unemployment etc
+  ,paid_media_spends = c("digital_m","influence_m","banner_m") # mandator input
+  ,paid_media_vars = c("app_m", "e_com_m","on_foot") # mandatory.
   # paid_media_vars must have same order as paid_media_spends. Use media exposure metrics like
   # impressions, GRP etc. If not applicable, use spend instead.
-  ,organic_vars = ("publicity_m") # marketing activity without media spend
-  # ,factor_vars = ("incidents") # specify which variables in context_vars or
+  ,organic_vars = ("compete_g") # marketing activity without media spend
+  ,factor_vars = ("incidents") # specify which variables in context_vars or
   # organic_vars are factorial
   # prophet pulls in your date range from the date variable, but the window start
   # and window end require you to put in dates that are in between and smaller
