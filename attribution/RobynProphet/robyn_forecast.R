@@ -1,18 +1,30 @@
 ################################################################
 #### Step 0: Setup environment
 
-# remotes::install_github("facebookexperimental/Robyn/R")
-install.packages(c('Amelia','nloptr','lares','Robyn','dplyr','reticulate','tidyr'))
+remotes::install_github("facebookexperimental/Robyn/R")
+install.packages(c('Amelia','nloptr','lares','Robyn','dplyr',
+                   'h2o', 'reticulate','tidyr'))
 install.packages("reticulate") # Install reticulate first if you haven't already
 
-library('Amelia', 'npreg', 'dplyr', 'nloptr', 'lares',
-        'Robyn', 'tidyr')
-library('reticulate', 'h2o')
+library(Amelia)
+library(npreg)
+library(dplyr)
+library(nloptr)
+library(lares)
+library(Robyn)
+library(tidyr)
+library(reticulate)
+library(h2o)
 h2o.init()
 conda_create("r-reticulate")
 conda_install("r-reticulate", "nevergrad", pip=TRUE)
 use_condaenv("r-reticulate")
 
+# Check this issue for more ideas to debug your reticulate/nevergrad issues:
+# https://github.com/facebookexperimental/Robyn/issues/189
+
+################################################################
+#### Step 1: Load data
 start <- Sys.time()
 getwd()
 setwd("G:/My Drive/To_Do/IN_DS/Robyn")
@@ -20,13 +32,6 @@ setwd("G:/My Drive/To_Do/IN_DS/Robyn")
 ### Force multicore when using RStudio
 Sys.setenv(R_FUTURE_FORK_ENABLE=TRUE)
 options(future.fork.enable = TRUE)
-
-# Check this issue for more ideas to debug your reticulate/nevergrad issues:
-# https://github.com/facebookexperimental/Robyn/issues/189
-
-################################################################
-#### Step 1: Load data
-
 df <- read.csv('df1.csv')
 
 ## Check holidays from Prophet and select from your country
@@ -46,9 +51,9 @@ robyn_object <- "C:/Users/norri/Desktop/MyRobyn.RDS"
 # to test the dummy data
 
 names(df)[names(df) == "Date"] <- "DATE"
-df$DATE <- as.POSIXct(df$DATE,"%Y-%m-%d", tz = "UTC", origin="2019-10-01")
+# df$DATE <- as.POSIXct(df$DATE,"%Y-%m-%d", tz = "UTC", origin="2019-10-01")
 names(df)[names(df) == "Total.Sales"] <- "revenue"
-df$competitor_sales_b <- abs(rnorm(94, sd = 1.4)) * 1000000 
+df$competitor_sales_b <- abs(rnorm(94, sd = 1.4)) * 1000000
 names(df)[names(df) == "competitor_sales_b"] <- "competitor" #competitor_B
 df$events <- 'na'
 names(df)[names(df) == "events"] <- "incidents" # events
@@ -59,7 +64,42 @@ df$incident_m <- df$incidents # event_S
 names(df)[names(df) == 'Influencers'] <- 'influence_m' # influence_m
 names(df)[names(df) == 'Coupons_Apps'] <- 'app_m' # app_S
 names(df)[names(df) == 'Banners'] <- 'banner_m' # banner_m
-names(df)[names(df) == 'In.Store.Demo'] <- 'publicity_m' # circular_s
+names(df)[names(df) == 'In_Store'] <- 'publicity_m' # circular_s
+
+
+# media <- c("social_m","email_m","display","influence_m","incident_m","publicity_m")
+# hyper_names(adstock = "weibull_pdf", all_media = media)
+
+# hyperparameters <- list(
+# facebook_S_alphas = c(0.5, 3), # example bounds for alpha
+# facebook_S_gammas = c(0.3, 1), # example bounds for gamma
+# facebook_S_thetas = c(0, 0.3), # example bounds for theta
+# print_S_alphas = c(0.5, 3),
+# print_S_gammas = c(0.3, 1),
+# print_S_thetas = c(0.1, 0.4),
+# tv_S_alphas = c(0.5, 3),
+# tv_S_gammas = c(0.3, 1),
+# tv_S_thetas = c(0.3, 0.8)
+# )
+
+# Define hyper_names for weibull adstock
+# hyper_names(adstock = "weibull", all_media = media)
+#
+# hyperparameters <- list(
+# facebook_S_alphas = c(0.5, 3), # example bounds for alpha
+# facebook_S_gammas = c(0.3, 1), # example bounds for gamma
+# facebook_S_shapes = c(0.0001, 2), # example bounds for shape
+# facebook_S_scales = c(0, 0.1), # example bounds for scale
+# print_S_alphas = c(0.5, 3),
+# print_S_gammas = c(0.3, 1),
+# print_S_shapes = c(0.0001, 2),
+# print_S_scales = c(0, 0.1),
+# tv_S_alphas = c(0.5, 3),
+# tv_S_gammas = c(0.3, 1),
+# tv_S_shapes = c(0.0001, 2),
+# tv_S_scales = c(0, 0.1)
+# )
+
 
 # df['incidents'][df['incidents'] == 'na'] <- 'yes'
 # df <- na.omit(df)
@@ -83,28 +123,24 @@ InputCollect <- robyn_inputs(
   ,dep_var = "revenue" # there should be only one dependent variable
   ,dep_var_type = "revenue" # "revenue" (ROI) or "conversion" (CPA)
   ,prophet_vars = c("trend", "season", "holiday") # "trend","season", "weekday" & "holiday"
-  ,prophet_country = "US"# input one country of dt_prophet_holidays 
-  # ,context_vars = c("incidents") # e.g. competitors, discount, unemployment etc
-  ,context_vars = c("competitor") # e.g. competitors, discount, unemployment etc
-  ,paid_media_spends = c("app_m","banner_m","influence_m","Brand_Email") # mandatory input
-  ,paid_media_vars = c("app_m", "In_Store","Digital_Equity","E_Commerce") # mandatory.
+  ,prophet_country = "US"# input one country of dt_prophet_holidays
+  ,context_vars = ("competitor") # e.g. competitors, discount, unemployment etc
+  ,paid_media_spends = c("app_m","Brand_Email","banner_m") # mandator input
+  ,paid_media_vars = c("influence_m", "E_Commerce","Digital_Equity") # mandatory.
   # paid_media_vars must have same order as paid_media_spends. Use media exposure metrics like
   # impressions, GRP etc. If not applicable, use spend instead.
-  ,organic_vars = c("publicity_m") # marketing activity without media spend
-  # ,factor_vars = c("incidents") # specify which variables in context_vars or organic_vars are factorial
+  ,organic_vars = ("publicity_m") # marketing activity without media spend
+  # ,factor_vars = ("incidents") # specify which variables in context_vars or
+  # organic_vars are factorial
   # prophet pulls in your date range from the date variable, but the window start
   # and window end require you to put in dates that are in between and smaller
   # than your total dates
   ,window_start = "2020-01-01"
   ,window_end = "2021-01-01"
   ,adstock = "weibull_pdf" # geometric, weibull_cdf or weibull_pdf.
-  # these were recommended by the prophet documentation but were not included
-  # in the demo, seem helpful so far
-  # ,hyperparameters = NULL
-  # ,calibration_input = NULL
 )
 print(InputCollect)
-help(package = "Robyn")
+# help(package = "Robyn")
 #### 2a-2: Second, define and add hyperparameters
 #### finished 2a-2
 ## -------------------------------- NOTE v3.6.0 CHANGE !!! ---------------------------------- ##
@@ -119,8 +155,8 @@ hyper_names <- hyper_names(adstock = InputCollect$adstock, all_media = InputColl
 plot_adstock(plot = TRUE)
 plot_saturation(plot = TRUE)
 
-# print(InputCollect$hyperparameters)
-# hyper_names(adstock = hyperparameters$display_alphas, all_media = adstock )
+print(InputCollect$hyperparameters)
+
 #??? Write function here to pass through all the info
 ## 2. Get correct hyperparameter names:
 # All variables in paid_media_spends and organic_vars require hyperparameter and will be
@@ -169,37 +205,55 @@ plot_saturation(plot = TRUE)
 
 ## 4. Set individual hyperparameter bounds. They either contain two values e.g. c(0, 0.5),
 # or only one value, in which case you'd "fix" that hyperparameter.
-media <- c('social_m', 'email_m', 'display', 'influence_m', 'incident_m',
-           'publicity_m')
-names <- hyper_names(adstock = 'weibull', all_media = media)
+# media <- c('social_m', 'email_m', 'display', 'influence_m', 'incident_m',
+#            'publicity_m')
+new_hyper <- hyper_names(adstock = InputCollect$adstock, all_media = InputCollect$all_media)
+
+# hyperparameters <- list(
+#   display_alphas = c(0.5, 3)
+#   ,display_gammas = c(0.3, 1)
+#   ,display_scales = c(0, 0.1)
+#   ,display_shapes = c(0.0001, 10)
+#   ,email_M_alphas = c(0.5, 3)
+#   ,email_M_gammas = c(0.3, 1)
+#   ,email_M_scales = c(0, 0.1)
+#   ,email_M_shapes = c(0.0001, 10)
+#   ,incident_m_alphas = c(0.5, 3)
+#   ,incident_m_gammas = c(0.1, 1)
+#   ,incident_m_scales = c(0, 0.1)
+#   ,incident_m_shapes = c(0.0001, 10)
+#   ,influence_m_alphas = c(0.5, 3)
+#   ,influence_m_gammas = c(0.3, 1)
+#   ,influence_m_scales = c(0, 0.1)
+#   ,influence_m_shapes = c(0.0001, 10)
+#   ,publicity_m_alphas = c(0.5, 3)
+#   ,publicity_m_gammas = c(0.3, 1)
+#   ,publicity_m_scales = c(0, 0.1)
+#   ,publicity_m_shapes = c(0.0001, 10)
+#   ,social_m_alphas = c(0.5, 3)
+#   ,social_m_gammas = c(0.3, 1)
+#   ,social_m_scales = c(0, 0.1)
+#   ,social_m_shapes = c(0.0001, 10)
+# )
 
 hyperparameters <- list(
-  social_m_alphas = c(0.5, 3)
-  ,social_m_gammas = c(0.3, 1)
-  ,social_m_scales = c(0, 0.1)        
-  ,social_m_shapes = c(0.0001, 10)
-  ,email_m_alphas = c(0.5, 3)
-  ,email_m_gammas = c(0.3, 1)
-  ,email_m_scales = c(0, 0.1)
-  ,email_m_shapes = c(0.0001, 10)
-  ,display_alphas = c(0.5, 3)
-  ,display_gammas = c(0.1, 1)
-  ,display_scales = c(0, 0.1)
-  ,display_shapes = c(0.0001, 10)
-  ,influence_m_alphas = c(0.5, 3)
-  ,influence_m_gammas = c(0.3, 1)
-  ,influence_m_scales = c(0, 0.1)
-  ,influence_m_shapes = c(0.0001, 10)
-  ,incident_m_alphas = c(0.5, 3)
-  ,incident_m_gammas = c(0.3, 1)
-  ,incident_m_scales = c(0, 0.1)
-  ,incident_m_shapes = c(0.0001, 10)
+   app_m_alphas = c(0.5, 3)
+  ,app_m_gammas = c(0.3, 1)
+  ,app_m_scales = c(0, 0.1)
+  ,app_m_shapes = c(0.0001, 10)
+  ,banner_m_alphas = c(0.5, 3)
+  ,banner_m_gammas = c(0.3, 1)
+  ,banner_m_scales = c(0, 0.1)
+  ,banner_m_shapes = c(0.0001, 10)
+  ,Brand_Email_alphas = c(0.5, 3)
+  ,Brand_Email_gammas = c(0.3, 1)
+  ,Brand_Email_scales = c(0, 0.1)
+  ,Brand_Email_shapes = c(0.0001, 10)
   ,publicity_m_alphas = c(0.5, 3)
   ,publicity_m_gammas = c(0.3, 1)
   ,publicity_m_scales = c(0, 0.1)
   ,publicity_m_shapes = c(0.0001, 10)
-)
-
+  )
 #### 2a-3: Third, add hyperparameters into robyn_inputs()
 # ?robyn_inputs
 InputCollect <- robyn_inputs(InputCollect = InputCollect, hyperparameters = hyperparameters)
