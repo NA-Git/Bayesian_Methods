@@ -2,6 +2,7 @@
 ### This data was created from the Amazon Kind & Nature's Path
 ### It was selected down to either just kind or just NP,
 ### Then the date column was renamed to 'ds' and the sales column to 'y'
+
 # install.packages('prophet')
 # install.packages('timeDate')
 # install.packages('dplyr')
@@ -12,14 +13,8 @@ library('dplyr')
 library('lubridate')
 library('ggplot2')
 
-start = Sys.time()
-
-getwd()
-setwd('/home/matt/Insync/matthew@mdnorris.com/Google Drive/To_Do/IN_DS/Prophet')
-getwd()
-
 # this file was preformatted to work with Prophet
-df <- read.csv('np_prophet.csv')
+df <- read.csv('G:/My Drive/To_Do/IN_DS/Prophet/np_prophet.csv')
 
 # to run prophet, there needs to be only two columns: ds, which is 
 # formatted in YYYY-MM-DD format, and y, which is usually sales
@@ -32,13 +27,14 @@ df <- read.csv('np_prophet.csv')
 df <- df[order(df$ds),] # orders the df$ds column in ascending order
 df$ds <- as.POSIXct(df$ds,"%Y-%m-%d", tz = "UTC", origin="2018-06-03")
 
+## I split up the files for testing, training, and holidays
 df <- subset(df, ds > '2020-02-28' & ds < '2022-05-22')
 
 df_train <- subset(df, ds > '2020-03-01' & ds < '2022-02-27')
 
 df_test <- subset(df, ds > '2022-02-28' & ds < '2022-05-22')
 
-prophet_holidays <- read.csv("prophet_holidays.csv")
+prophet_holidays <- read.csv("G:/My Drive/To_Do/IN_DS/Robyn/holidays.csv")
 prophet_holidays <- prophet_holidays[prophet_holidays$country == 'US', ]
 
 # I've chosen to define most parameters in the Prophet
@@ -48,7 +44,7 @@ prophet_holidays <- prophet_holidays[prophet_holidays$country == 'US', ]
 # here: https://cran.r-project.org/web/packages/prophet/prophet.pdf
 
 m <- prophet(
-    df = df_train,
+    df_train,
     growth = "linear",
     # changepoints = NULL,
     # n.changepoints = 25,
@@ -76,8 +72,7 @@ future <- make_future_dataframe(m, periods = 12, freq = 'week')
 forecast <- predict(m, future)
 
 fcst <- predict(m, future)
-plot(m, fcst, main = "Fig 1", xlab = 'Time',
-     ylab = 'Revenue')
+plot(m, fcst)
 
 # plots trend, holidays, seasonality, if those are included
 prophet_plot_components(m, forecast)
@@ -91,11 +86,11 @@ plot_forecast_component(m, fcst, 'trend', uncertainty = TRUE,
 dyplot.prophet(m, fcst, uncertainty = TRUE)
 
 # creates lines to overlay significant changes in the forecast plot
-# plot(m, fcst) + add_changepoints_to_plot(m)
+plot(m, fcst) + add_changepoints_to_plot(m)
 
 # the following functions cross-validate
 # and provide the RMSE stat, among others
-cv <-cross_validation(m, 7, 'weeks', period = 6, initial = NULL, 
+cv <-cross_validation(m, 7, 'weeks', period = 12, initial = NULL, 
                       cutoffs = NULL)
 
 # this plots a performance metric, in this case RMSE, over the forecast horizon
@@ -115,79 +110,80 @@ mape = performance_metrics(cv, metrics = 'mape',
 smape = performance_metrics(cv, metrics = 'smape',
                            rolling_window = 0.1)
 
-print(mean(rmse$rmse))
-print(mean(mape$mape))
-print(mean(smape$smape))
-
+#### Creates two 12 week windows from the predicted and actual values
+#### to be used to plot against each other and create more metrics
 fcst_12 <- subset(fcst, ds > '2022-02-28' & ds < '2022-05-22')
-fcst_12 <- fcst_12[,c('ds', 'yhat')]
+fcst_12 <- fcst_12[,c('ds', 'yhat', 'yhat_lower', 'yhat_upper')]
 names(fcst_12)[2] <- "y"
+fcst_12$y_obs <- df_test$y
 
-actual <- rbind(df_train, df_test)
-predicted <- rbind(df_train, fcst_12)
+# plot of y_hat, y_hat_upper, y_hat_lower, and observed against each other
+matplot(fcst_12$ds, fcst_12, type = c("l"), lty = 1, lwd = 2,
+        pch = 1, col = 2:5, xlab = 'Time', ylab = 'Predicted Revenue', 
+        axes = FALSE,)
+leg.txt <- c("Observed", "Predicted", "Pred. Lower Bound", "Pred. Upper Bound")
+legend('top', leg.txt, bg = "gray90", col=2:5, pch=1)
+axis(1, fcst_12$ds, format(fcst_12$ds, "%b %d"), cex.axis = .7)
+box()
 
-# plotting of actual data against forecast for 12 weeks
-xdata <- actual$ds
-y1 <- actual$y
-y2 <- predicted$y
-
-# First curve is plotted
-plot(xdata, y1, type="o", col="blue", pch="+", lty=2)
-
-# Add second curve to the same plot by calling points() and lines()
-points(xdata, y2, col="green", pch="x")
-lines(xdata, y2, col="green",lty=2)
-
-# Calculation of RMSE for the last twelve weeks of the forecast
+###### Calculations of RMSE and two for RSS for the past 12 weeks ####
 test = df_test$y
 fcst_y = fcst_12$y
-sqrt(mean((test - fcst_y)^2))
 
-# RSS from the 12 week prediction period
-sum((fcst_y - test)^2)
+# # Backup RSS from the 12 week prediction period
+# total = 0
+# for (i in 1:12) {
+#   temp = (fcst_y[i] - test[i])^2
+#   total = total + temp
+# }
+# # print(total)
 
-total = 0 
-for (i in 1:12) { 
-  temp = (fcst_y[i] - test[i])^2 
-  total = total + temp }
-### KIND and Nature's Path tests
+## This can recreate the chart if need be
+## Chart <- data.frame(matrix(ncol = 5, nrow = 2))
+## colnames(Chart) <- c('RSS', 'RSME', 'RSME_12', 'MAPE', 'SMAPE')
 
-# 1st test RMSE: 237838.3 & MAPE: .1755 & SMAPE: .1529
-# increasing prior value of seasonality
-# 2nd test RMSE: 270038.5 & MAPE: .1779 & SMAPE: .1452
-# change additive to multiplicative
-# 3rd test RMSE: 1302971 & MAPE: 0.7202772 & SMAPE: 0.3971218
-# changed back to additive, lowered seasonality
-# 4th test RMSE: 261580.7 & MAPE: 0.1738695 & SMAPE: 0.1519308
-# increased MCMC samples
-# 5th test RMSE: 257949.5 & MAPE: 0.1703171 & SMAPE: 0.1490988
-# lowered MCMC samples to 400
-# 6th test RMSE: 284216.8 & MAPE: 0.1836734 & SMAPE: 0.1569333
-# lowered interval size
-# 7th test RMSE: 262790.4 & MAPE: 0.1743669 & SMAPE: 0.1521979
-# increased interval width
-# 8th test RMSE: 274505.8 & MAPE: 0.180157 & SMAPE: 0.1555094
-# .35 interval width and 200 fewer samples
-# 9th test RMSE: 261817 & MAPE: 0.1743573 & SMAPE: 0.1522331
-# increase samples, decrease interval, and increase seasonality prior
+# this section records the statistics for the chart
 
-# LAST RUN KIND
-# 10th RUN - RMSE: 257864.9 & MAPE: 0.1713011 & SMAPE: 0.1502048
+# RSS - a measure that subtracts the predicted value from the model
+# from the observed and squares their difference, then sums all of the
+# total differences
 
-# LAST RUN NATURE"S PATH
-# 11th RUN - RMSE: 57629.27 & MAPE: 0.167076 & SMAPE: 0.1349863
+# RSME - is an excellent measure that minimizes deviations or residuals, but
+# is sensitive to outliers
 
-end = Sys.time()
-duration = end - start
-print(duration)
+# RSME_12 - We performed the RMSE calculation for the last twelve weeks
+# of the predictions against the actuals
 
-###???################# SUMMARY ####################
-#### Summary: training model over two years provided decent fit
-#### but it is also possible an outlier holiday may have distorted
-#### at least one year's worth of modeling of
-#### the RSME, MAPE, and SMAPE. The did appear to have, with tweaking,
+# MAPE - an intuitive diagnostic that is often used for ML, typically
+# used for forecasting accuracy. There are some issues with its interpretation,
+# namely it's unusual behavior nearer zero
+
+# SMAPE - a relative of MAPE, it is based on on percentages away in error.
+# it does not deal well with some asymmetric data
+
+RSS <- sum((fcst_y - test)^2)
+RSME <- round(mean(rmse$rmse), 4)
+RSME_12 <- round(sqrt(mean((test - fcst_y)^2)), 4)
+MAPE <- round(mean(mape$mape), 4)
+SMAPE <- round(mean(smape$smape), 4)
+
+# by adding the starts to this chart, printing it,
+# and commenting it out, it would be useful for testing
+Chart[1,1:5] <- c(RSS, RSME, RSME_12, MAPE, SMAPE)
+print(Chart)
+
+# Nature's Path Model #1 mk 1
+# RSS     RSME  RSME_12   MAPE  SMAPE
+# 1 55321963933 192098.5 67898.19 0.2832 0.2646
+
+# Nature's Path Model #1 mk2
+# RSS     RSME  RSME_12   MAPE  SMAPE
+# 1 57887436328 58473.42 69454.68 0.1122 0.0999
+
+#################### SUMMARY ####################
+#### Summary: training model over two years may have improved
+#### fit, it seems like holiday is throwing at least one year's
+#### worth of modeling is off, the RSME, MAPE, and SMAPE have
 #### continuously improved, as well as the unexpected spike
 #### right before the the prediction period ended did not help
 #### anything
-#### ??? Do you think the approximate spike around the end of the
-#### train period may have skewed the prediction
