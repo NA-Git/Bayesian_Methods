@@ -33,7 +33,7 @@ head(dt_prophet_holidays)
 
 ## Set robyn_object. It must have extension .RDS. The object name can
 # be different than Robyn, but ideally should not be moved
-robyn_object <- "C:/Users/norri/Desktop/MyRobyn.RDS"
+robyn_object <- "/home/matt/MyRobyn.RDS"
 
 ################################################################
 #### Step 2a: For first time user: Model specification in 4 steps
