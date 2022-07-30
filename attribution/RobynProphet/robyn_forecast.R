@@ -20,7 +20,7 @@ use_condaenv("r-reticulate")
 #### Step 1: Load data
 
 getwd()
-setwd("G:/My Drive/IN/Data/Robyn/")
+setwd("/home/matt/Insync/matthew@mdnorris.com/Google Drive/IN/Data/Robyn")
 
 ### Force multicore when using RStudio
 Sys.setenv(R_FUTURE_FORK_ENABLE = TRUE)
@@ -41,7 +41,7 @@ robyn_object <- "/home/matt/MyRobyn.RDS"
 
 # DATE
 names(df)[names(df) == "Date"] <- "DATE"
-df$DATE <- as.POSIXlt(df$DATE, "%Y-%m-%d", tz = "UTC", origin = "2019-09-30")
+# df$DATE <- as.POSIXlt(df$DATE, "%Y-%m-%d", tz = "UTC", origin = "2019-09-30")
 # revenue
 names(df)[names(df) == "Total.Sales"] <- "revenue"
 # competitor
@@ -68,7 +68,7 @@ names(df)[names(df) == 'E_Commerce'] <- 'e_com_m' # e_com_m
 
 InputCollect <- robyn_inputs(
   dt_input = df
-  , dt_holidays = holidays
+  , dt_holidays = dt_prophet_holidays
   , date_var = "DATE" # date format must be "2020-01-01"
   , dep_var = "revenue" # there should be only one dependent variable
   , dep_var_type = "revenue" # "revenue" (ROI) or "conversion" (CPA)
@@ -92,7 +92,7 @@ InputCollect <- robyn_inputs(
   , adstock = "weibull_pdf" # geometric, weibull_cdf or weibull_pdf.
 )
 print(InputCollect)
-Cstack_info()
+
 #### 2a-2: Second, define and add hyperparameters
 #### finished 2a-2
 ## -------------------------------- NOTE v3.6.0 CHANGE !!! -------------------------- ##
@@ -204,11 +204,11 @@ print(InputCollect)
 ## ------------------------------------------------------------------------------------------ ##
 calibration_input <- data.frame(
   # channel name must in paid_media_vars
-  channel = c("email_m", "app_m", "banner_m"),
+  channel = c("digital_m", "influence_m", "banner_m"),
   # liftStartDate must be within input data range
   liftStartDate = as.Date(c("2019-12-08", "2019-12-08", "2019-12-08")),
   # liftEndDate must be within input data range
-  liftEndDate = as.Date(c("2022-04-17", "2022-04-17", "2022-04-17")),
+  liftEndDate = as.Date(c("2021-04-17", "2021-04-17", "2021-04-17")),
   # Provided value must be tested on same campaign level in model and same metric as dep_var_type
   liftAbs = c(400000, 300000, 200000),
   # Spend within experiment: should match within a 10% error your spend on date range for each channel from dt_input
@@ -235,16 +235,16 @@ InputCollect <- robyn_inputs(
   , dep_var_type = "revenue"
   , prophet_vars = c("trend", "season", "holiday")
   , prophet_country = "US"
-  , context_vars = c("competitor_sales_B", "events")
-  , paid_media_spends = c("disp_S", "event_S", "email_S", "sm_S", "influence_S")
-  , paid_media_vars = c("disp_S", "event_S", "email_S", "app_S", "banner_S")
-  , organic_vars = c("circular_S")
-  , factor_vars = c("events")
-  , window_start = "2019-12-08"
-  , window_end = "2022-04-17"
+  , context_vars = c("e_com_m")
+  , paid_media_spends = c("digital_m", "influence_m", "banner_m")
+  , paid_media_vars = c("app_m", "e_com_m", "on_foot")
+  , organic_vars = c("compete_g")
+  # , factor_vars = c("events")
+  , window_start = "2019-10-21"
+  , window_end = "2021-04-17"
   , adstock = "weibull_pdf"
   , hyperparameters = hyperparameters # as in 2a-2 above
-  , calibration_input = calibration_input # as in 2a-4 above
+  # , calibration_input = calibration_input # as in 2a-4 above
 )
 
 ################################################################
@@ -253,10 +253,10 @@ InputCollect <- robyn_inputs(
 ## Run all trials and iterations. Use ?robyn_run to check parameter definition
 OutputModels <- robyn_run(
   InputCollect = InputCollect # feed in all model specification
-  , cores = 8 # default ??? Test tese functions
+  , cores = 16 # default ??? Test tese functions
   #, add_penalty_factor = FALSE # Untested feature. Use with caution.
-  , iterations = 2000 # recommended for the dummy dataset
-  , trials = 5 # recommended for the dummy dataset
+  , iterations = 2500 # recommended for the dummy dataset
+  , trials = 10 # recommended for the dummy dataset
   , outputs = FALSE # outputs = FALSE disables direct model output
 )
 print(OutputModels)
@@ -269,8 +269,8 @@ OutputModels$convergence$moo_cloud_plot
 ## Calculate Pareto optimality, cluster and export results and plots. See ?robyn_outputs
 OutputCollect <- robyn_outputs(
   InputCollect, OutputModels
-  , pareto_fronts = 3
-  , calibration_constraint = 0.1 # range c(0.01, 0.1) & default at 0.1
+  , pareto_fronts = 1
+  , calibration_constraint = c(0.01, 0.1) # range c(0.01, 0.1) & default at 0.1
   , csv_out = "pareto" # "pareto" or "all"
   , clusters = TRUE # Set to TRUE to cluster similar models by ROAS. See ?robyn_clusters
   , plot_pareto = TRUE # Set to FALSE to deactivate plotting and saving model one-pagers
@@ -282,8 +282,8 @@ print(OutputCollect)
 OutputCollect <- robyn_run(
   InputCollect = InputCollect
   , cores = NULL
-  , iterations = 200
-  , trials = 2
+  , iterations = 2000
+  , trials = 5
   , add_penalty_factor = TRUE # Test this functionality
   , outputs = TRUE
   , pareto_fronts = 3
@@ -310,7 +310,7 @@ print(OutputCollect)
 
 ## Compare all model one-pagers and select one that mostly reflects your business reality
 print(OutputCollect)
-select_model <- "1_4_8" # select one from above
+select_model <- "5_115_6" # select one from above
 ExportedModel <- robyn_save(
   robyn_object = robyn_object # model object location and name
   , select_model = select_model # selected model ID
@@ -339,10 +339,10 @@ AllocatorCollect1 <- robyn_allocator(
   , select_model = select_model
   , scenario = "max_historical_response"
   , channel_constr_low = 0.7
-  , channel_constr_up = c(1.2, 1.5, 1.5, 1.5, 1.5)
+  , channel_constr_up = c(1.2, 1.5, 1.5)
   , export = TRUE
   , date_min = "2019-12-08"
-  , date_max = "2022-04-17"
+  , date_max = "2021-04-17"
 )
 print(AllocatorCollect1)
 plot(AllocatorCollect1)
@@ -355,8 +355,8 @@ AllocatorCollect2 <- robyn_allocator(
   , OutputCollect = OutputCollect
   , select_model = select_model
   , scenario = "max_response_expected_spend"
-  , channel_constr_low = c(0.7, 0.7, 0.7, 0.7, 0.7)
-  , channel_constr_up = c(1.2, 1.5, 1.5, 1.5, 1.5)
+  , channel_constr_low = c(0.7, 0.7, 0.7)
+  , channel_constr_up = c(1.2, 1.5, 1.5)
   , expected_spend = 1000000 # Total spend to be simulated
   , expected_spend_days = 7 # Duration of expected_spend in days
   , export = TRUE
@@ -370,11 +370,11 @@ plot(AllocatorCollect2)
 
 ## QA optimal response
 # Pick any media variable: InputCollect$all_media
-select_media <- "disp_S"
+select_media <- "influence_m"
 # For paid_media_spends set metric_value as your optimal spend
 metric_value <- AllocatorCollect1$dt_optimOut[channels == select_media, optmSpendUnit]
 # # For paid_media_vars and organic_vars, manually pick a value
-# metric_value <- 10000
+metric_value <- 10000
 
 if (TRUE) {
   optimal_response_allocator <- AllocatorCollect1$dt_optimOut[
@@ -469,7 +469,7 @@ Spend1 <- 60000
 Response1 <- robyn_response(
   robyn_object = robyn_object
   #, select_build = 1 # 2 means the second refresh model. 0 means the initial model
-  , media_metric = "influence_S"
+  , media_metric = "influence_m"
   , metric_value = Spend1)
 Response1$response / Spend1 # ROI for search 80k
 Response1$plot
@@ -479,7 +479,7 @@ Spend2 <- Spend1 + 1000
 Response2 <- robyn_response(
   robyn_object = robyn_object
   #, select_build = 1
-  , media_metric = "influence_S"
+  , media_metric = "banner_m"
   , metric_value = Spend2)
 Response2$response / Spend2 # ROI for search 81k
 Response2$plot
@@ -492,7 +492,7 @@ imps <- 50000000
 response_imps <- robyn_response(
   robyn_object = robyn_object
   #, select_build = 1
-  , media_metric = "app_S"
+  , media_metric = "influence_m"
   , metric_value = imps)
 response_imps$response / imps * 1000
 response_imps$plot
@@ -502,7 +502,7 @@ sendings <- 30000
 response_sending <- robyn_response(
   robyn_object = robyn_object
   #, select_build = 1
-  , media_metric = "circular_S"
+  , media_metric = "digital_m"
   , metric_value = sendings)
 response_sending$response / sendings * 1000
 response_sending$plot
