@@ -33,7 +33,7 @@ head(dt_prophet_holidays)
 
 ## Set robyn_object. It must have extension .RDS. The object name can
 # be different than Robyn, but ideally should not be moved
-robyn_object <- "MyRobyn.RDS"
+robyn_object <- "C:/Users/norri/Desktop/MyRobyn.RDS"
 
 ################################################################
 #### Step 2a: For first time user: Model specification in 4 steps
@@ -66,15 +66,6 @@ names(df)[names(df) == 'Brand_Email'] <- 'brand_m' # brand_m
 # on_foot
 names(df)[names(df) == 'E_Commerce'] <- 'e_com_m' # e_com_m
 
-# df cannot have any missings or any value at 0 or below
-# the variables to be worried about are
-# date - DATE
-# revenue - revenue
-# context_vars - compete_g
-# paid_media_spends - digital_m, influence_m, banner_m
-# paid_media_vars - app_m, e_com_m, on_foot
-# organic_vars - econ_m
-# factor_vars -
 InputCollect <- robyn_inputs(
   dt_input = df
   , dt_holidays = holidays
@@ -101,7 +92,7 @@ InputCollect <- robyn_inputs(
   , adstock = "weibull_pdf" # geometric, weibull_cdf or weibull_pdf.
 )
 print(InputCollect)
-
+Cstack_info()
 #### 2a-2: Second, define and add hyperparameters
 #### finished 2a-2
 ## -------------------------------- NOTE v3.6.0 CHANGE !!! -------------------------- ##
