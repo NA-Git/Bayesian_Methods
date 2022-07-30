@@ -7,12 +7,22 @@ The [R plugin](https://www.jetbrains.com/help/pycharm/r-plugin-support.html) for
 handy capabilities to work with the [R Markdown](https://www.jetbrains.com/help/pycharm/r-markdown.html) files.
 To [add](https://www.jetbrains.com/help/pycharm/r-markdown.html#add-code-chunk) a new R chunk,
 ```{r}
-
+################## Dataset Construction ################
+### This data was created from the Amazon Kind & Nature's Path
+### It was selected down to either just kind or just NP,
+### Then the date column was renamed to 'ds' and the sales column to 'y'
 ```
 position the caret at any line or the code chunk, then click "+".
 
 The code chunk appears:
 ```{r}
+# install.packages('prophet')
+# install.packages('timeDate')
+# install.packages('dplyr')
+# install.packages('lubridate')
+```
+```{r}
+
 ```
 
 Type any R code in the chunk, for example:
