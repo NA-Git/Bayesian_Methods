@@ -7,6 +7,7 @@
       <sourceFolder url="file://C:/Python/Python39/site-packages" isTestSource="false" />
     </content>
     <content url="file://$MODULE_DIR$" />
+    <orderEntry type="jdk" jdkName="Python 3.8 (mercury-ds)" jdkType="Python SDK" />
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
   </component>
