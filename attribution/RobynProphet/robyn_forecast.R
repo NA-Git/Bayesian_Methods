@@ -16,18 +16,14 @@ h2o.init()
 conda_create("r-reticulate")
 conda_install("r-reticulate", "nevergrad", pip = TRUE)
 use_condaenv("r-reticulate")
-
 ################################################################
 #### Step 1: Load data
-
 getwd()
 setwd("/home/matt/DataspellProjects/mercury-ds/attribution/RobynProphet/")
-
 ### Force multicore when using RStudio
 Sys.setenv(R_FUTURE_FORK_ENABLE = TRUE)
 options(future.fork.enable = TRUE)
 df <- read.csv('robyn_data.csv', fileEncoding = 'UTF-8-BOM')
-
 ## Check holidays from Prophet and select from your country
 data("dt_prophet_holidays")
 head(dt_prophet_holidays)
@@ -166,8 +162,6 @@ hyperparameters <- list(
 )
 
 #### 2a-3: Third, add hyperparameters into robyn_inputs()
-# ?robyn_inputs
-
 
 InputCollect <- robyn_inputs(InputCollect = InputCollect, hyperparameters = hyperparameters)
 print(InputCollect)
