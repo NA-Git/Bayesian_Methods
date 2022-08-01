@@ -1,5 +1,6 @@
 ################################################################
 #### Step 0: Setup environment
+# It's best to install and load in this order, it has yet to fail
 install.packages("reticulate") # Install reticulate first if you haven't alreadyt
 remotes::install_github("facebookexperimental/Robyn/R")
 install.packages(c('nloptr', 'lares', 'dplyr', 'h2o', 'reticulate', 'tidyr'))
@@ -20,12 +21,12 @@ use_condaenv("r-reticulate")
 #### Step 1: Load data
 
 getwd()
-setwd("G:/My Drive/IN/Data/Robyn/")
+setwd("C:/Users/norri/Documents/GitHub/mercury-ds/attribution/RobynProphet/")
 
 ### Force multicore when using RStudio
 Sys.setenv(R_FUTURE_FORK_ENABLE = TRUE)
 options(future.fork.enable = TRUE)
-df <- read.csv('df.csv')
+df <- read.csv('robyn_data.csv', fileEncoding = 'UTF-8-BOM')
 
 ## Check holidays from Prophet and select from your country
 data("dt_prophet_holidays")
@@ -33,55 +34,34 @@ head(dt_prophet_holidays)
 
 ## Set robyn_object. It must have extension .RDS. The object name can
 # be different than Robyn, but ideally should not be moved
-robyn_object <- "C:/Users/norri/Desktop/MyRobyn.RDS"
+robyn_object <- "C:/Users/norri/Documents/GitHub/mercury-ds/attribution/RobynProphet
+/MyRobyn.RDS"
+################################################################
+### Step 1.5: Data Planning
+# # DATE
+# names(df)[names(df) == "Date"] <- "DATE"
+# df$DATE <- as.POSIXlt(df$DATE, "%Y-%m-%d", tz = "UTC", origin = "2019-09-30")
 
 ################################################################
 #### Step 2a: For first time user: Model specification in 4 steps
 #### 2a-1: First, specify input variables
 
-# DATE
-names(df)[names(df) == "Date"] <- "DATE"
-df$DATE <- as.POSIXlt(df$DATE, "%Y-%m-%d", tz = "UTC", origin = "2019-09-30")
-# revenue
-names(df)[names(df) == "Total.Sales"] <- "revenue"
-# competitor
-df$competitor_sales_b <- abs(rnorm(94, sd = 1.4)) * 100000
-names(df)[names(df) == "competitor_sales_b"] <- "compete_g"
-# incidents
-df$events <- 'na'
-names(df)[names(df) == "events"] <- "incidents"
-df$incidents[67] <- 'insurrection'
-# influence_m
-names(df)[names(df) == 'Influencers'] <- 'influence_m'
-# app_m
-names(df)[names(df) == 'Coupons_Apps'] <- 'app_m' # app_S
-# banner_m
-names(df)[names(df) == 'Banners'] <- 'banner_m' # banner_m
-# on_foot
-names(df)[names(df) == 'In_Store'] <- 'on_foot' # on_foot
-# digital_m
-names(df)[names(df) == 'Digital_Equity'] <- 'digital_m' # digital_m
-# banner_m
-names(df)[names(df) == 'Brand_Email'] <- 'brand_m' # brand_m
-# on_foot
-names(df)[names(df) == 'E_Commerce'] <- 'e_com_m' # e_com_m
-
 InputCollect <- robyn_inputs(
   dt_input = df
-  , dt_holidays = holidays
+  , dt_holidays = dt_prophet_holidays
   , date_var = "DATE" # date format must be "2020-01-01"
   , dep_var = "revenue" # there should be only one dependent variable
   , dep_var_type = "revenue" # "revenue" (ROI) or "conversion" (CPA)
   , prophet_vars = c("trend", "season", "holiday") # "trend","season",
   # "weekday" & "holiday"
   , prophet_country = "US" # input one country of dt_prophet_holidays
-  , context_vars = ("e_com_m") # e.g. competitors, discount, unemployment etc
-  , paid_media_spends = c("digital_m", "influence_m", "banner_m") # mandator input
-  , paid_media_vars = c("app_m", "e_com_m", "on_foot") # mandatory.
+  , context_vars = ("cag_V") # e.g. competitors, discount, unemployment etc
+  , paid_media_spends = c("Influencer_S", "Social_Media_S", "Radio_S") # mandator input
+  , paid_media_vars = c("Influencer_I", "Social_Media_I", "Radio_I") # mandatory.
   # paid_media_vars must have same order as paid_media_spends. Use media exposure
   # metrics like
   # impressions, GRP etc. If not applicable, use spend instead.
-  , organic_vars = ("compete_g") # marketing activity without media spend
+  , organic_vars = c("beef", 'chicken') # marketing activity without media spend
   # ,factor_vars = ("incidents") # specify which variables in context_vars or
   # organic_vars are factorial
   # prophet pulls in your date range from the date variable, but the window start
@@ -92,7 +72,8 @@ InputCollect <- robyn_inputs(
   , adstock = "weibull_pdf" # geometric, weibull_cdf or weibull_pdf.
 )
 print(InputCollect)
-Cstack_info()
+
+
 #### 2a-2: Second, define and add hyperparameters
 #### finished 2a-2
 ## -------------------------------- NOTE v3.6.0 CHANGE !!! -------------------------- ##
@@ -159,29 +140,36 @@ hyper_names(adstock = InputCollect$adstock, all_media = InputCollect$all_media)
 # or only one value, in which case you'd "fix" that hyperparameter.
 
 hyperparameters <- list(
-  banner_m_alphas = c(0.5, 3)
-  , banner_m_gammas = c(0.3, 1)
-  , banner_m_scales = c(0, 0.1)
-  , banner_m_shapes = c(0.0001, 10)
+  beef_alphas = c(0.5, 3)
+  , beef_gammas = c(0.3, 1)
+  , beef_scales = c(0, 0.1)
+  , beef_shapes = c(0.0001, 10)
 
-  , compete_g_alphas = c(0.5, 3)
-  , compete_g_gammas = c(0.3, 1)
-  , compete_g_scales = c(0, 0.1)
-  , compete_g_shapes = c(0.0001, 10)
+  , chicken_alphas = c(0.5, 3)
+  , chicken_gammas = c(0.3, 1)
+  , chicken_scales = c(0, 0.1)
+  , chicken_shapes = c(0.0001, 10)
 
-  , digital_m_alphas = c(0.5, 3)
-  , digital_m_gammas = c(0.3, 1)
-  , digital_m_scales = c(0, 0.1)
-  , digital_m_shapes = c(0.0001, 10)
+  , Influencer_S_alphas = c(0.5, 3)
+  , Influencer_S_gammas = c(0.3, 1)
+  , Influencer_S_scales = c(0, 0.1)
+  , Influencer_S_shapes = c(0.0001, 10)
 
-  , influence_m_alphas = c(0.5, 3)
-  , influence_m_gammas = c(0.3, 1)
-  , influence_m_scales = c(0, 0.1)
-  , influence_m_shapes = c(0.0001, 10)
+  , Radio_S_alphas = c(0.5, 3)
+  , Radio_S_gammas = c(0.3, 1)
+  , Radio_S_scales = c(0, 0.1)
+  , Radio_S_shapes = c(0.0001, 10)
+
+  , Social_Media_S_alphas = c(0.5, 3)
+  , Social_Media_S_gammas = c(0.3, 1)
+  , Social_Media_S_scales = c(0, 0.1)
+  , Social_Media_S_shapes = c(0.0001, 10)
 )
 
 #### 2a-3: Third, add hyperparameters into robyn_inputs()
 # ?robyn_inputs
+
+
 InputCollect <- robyn_inputs(InputCollect = InputCollect, hyperparameters = hyperparameters)
 print(InputCollect)
 
@@ -204,15 +192,15 @@ print(InputCollect)
 ## ------------------------------------------------------------------------------------------ ##
 calibration_input <- data.frame(
   # channel name must in paid_media_vars
-  channel = c("email_m", "app_m", "banner_m"),
+  channel = c("Influencer_S", "Social_Media_S", "Radio_S"),
   # liftStartDate must be within input data range
   liftStartDate = as.Date(c("2019-12-08", "2019-12-08", "2019-12-08")),
   # liftEndDate must be within input data range
-  liftEndDate = as.Date(c("2022-04-17", "2022-04-17", "2022-04-17")),
+  liftEndDate = as.Date(c("2021-04-17", "2021-04-17", "2021-04-17")),
   # Provided value must be tested on same campaign level in model and same metric as dep_var_type
   liftAbs = c(400000, 300000, 200000),
   # Spend within experiment: should match within a 10% error your spend on date range for each channel from dt_input
-  spend = c(421000, 7100, 240000),
+  spend = c(357200000, 23410000, 146400000),
   # Confidence: if frequentist experiment, you may use 1 - pvalue
   confidence = c(0.85, 0.8, 0.99),
   # KPI measured: must match your dep_var
@@ -227,25 +215,25 @@ InputCollect <- robyn_inputs(InputCollect = InputCollect, calibration_input = ca
 ## Specify hyperparameters as in 2a-2 and optionally calibration as in 2a-4 and provide them directly in robyn_inputs()
 ###? Note that any hyperparameters changed above need to be used here
 
-InputCollect <- robyn_inputs(
-  dt_input = df
-  , dt_holidays = dt_prophet_holidays
-  , date_var = "DATE"
-  , dep_var = "revenue"
-  , dep_var_type = "revenue"
-  , prophet_vars = c("trend", "season", "holiday")
-  , prophet_country = "US"
-  , context_vars = c("competitor_sales_B", "events")
-  , paid_media_spends = c("disp_S", "event_S", "email_S", "sm_S", "influence_S")
-  , paid_media_vars = c("disp_S", "event_S", "email_S", "app_S", "banner_S")
-  , organic_vars = c("circular_S")
-  , factor_vars = c("events")
-  , window_start = "2019-12-08"
-  , window_end = "2022-04-17"
-  , adstock = "weibull_pdf"
-  , hyperparameters = hyperparameters # as in 2a-2 above
-  , calibration_input = calibration_input # as in 2a-4 above
-)
+# InputCollect <- robyn_inputs(
+#   dt_input = df
+#   , dt_holidays = dt_prophet_holidays
+#   , date_var = "DATE"
+#   , dep_var = "revenue"
+#   , dep_var_type = "revenue"
+#   , prophet_vars = c("trend", "season", "holiday")
+#   , prophet_country = "US"
+#   , context_vars = c("competitor_sales_B", "events")
+#   , paid_media_spends = c("disp_S", "event_S", "email_S", "sm_S", "influence_S")
+#   , paid_media_vars = c("disp_S", "event_S", "email_S", "app_S", "banner_S")
+#   , organic_vars = c("circular_S")
+#   , factor_vars = c("events")
+#   , window_start = "2019-12-08"
+#   , window_end = "2022-04-17"
+#   , adstock = "weibull_pdf"
+#   , hyperparameters = hyperparameters # as in 2a-2 above
+#   , calibration_input = calibration_input # as in 2a-4 above
+# )
 
 ################################################################
 #### Step 3: Build initial model
@@ -253,7 +241,7 @@ InputCollect <- robyn_inputs(
 ## Run all trials and iterations. Use ?robyn_run to check parameter definition
 OutputModels <- robyn_run(
   InputCollect = InputCollect # feed in all model specification
-  , cores = 8 # default ??? Test tese functions
+  , cores = 16 # default ??? Test tese functions
   #, add_penalty_factor = FALSE # Untested feature. Use with caution.
   , iterations = 2000 # recommended for the dummy dataset
   , trials = 5 # recommended for the dummy dataset
@@ -282,8 +270,8 @@ print(OutputCollect)
 OutputCollect <- robyn_run(
   InputCollect = InputCollect
   , cores = NULL
-  , iterations = 200
-  , trials = 2
+  , iterations = 300
+  , trials = 3
   , add_penalty_factor = TRUE # Test this functionality
   , outputs = TRUE
   , pareto_fronts = 3
@@ -297,17 +285,15 @@ convergence$moo_distrb_plot
 convergence$moo_cloud_plot
 print(OutputCollect)
 
-## 4 csv files are exported into the folder for further usage. Check schema here:
+##??? 4 csv files are exported into the folder for further usage. Check schema here:
 ## https://github.com/facebookexperimental/Robyn/blob/main/demo/schema.R
 # pareto_hyperparameters.csv, hyperparameters per Pareto output model
 # pareto_aggregated.csv, aggregated decomposition per independent variable of all Pareto output
 # pareto_media_transform_matrix.csv, all media transformation vectors
 # pareto_alldecomp_matrix.csv, all decomposition vectors of independent variables
 
-
 ################################################################
 #### Step 4: Select and save the initial model
-
 ## Compare all model one-pagers and select one that mostly reflects your business reality
 print(OutputCollect)
 select_model <- "1_4_8" # select one from above
