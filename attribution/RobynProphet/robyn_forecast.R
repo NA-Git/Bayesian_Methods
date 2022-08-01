@@ -21,7 +21,7 @@ use_condaenv("r-reticulate")
 #### Step 1: Load data
 
 getwd()
-setwd("C:/Users/norri/Documents/GitHub/mercury-ds/attribution/RobynProphet/")
+setwd("/home/matt/DataspellProjects/mercury-ds/attribution/RobynProphet/")
 
 ### Force multicore when using RStudio
 Sys.setenv(R_FUTURE_FORK_ENABLE = TRUE)
@@ -34,8 +34,7 @@ head(dt_prophet_holidays)
 
 ## Set robyn_object. It must have extension .RDS. The object name can
 # be different than Robyn, but ideally should not be moved
-robyn_object <- "C:/Users/norri/Documents/GitHub/mercury-ds/attribution/RobynProphet
-/MyRobyn.RDS"
+robyn_object <- "/home/matt/Documents/IN/MyRobyn.RDS"
 ################################################################
 ### Step 1.5: Data Planning
 # # DATE
@@ -61,7 +60,7 @@ InputCollect <- robyn_inputs(
   # paid_media_vars must have same order as paid_media_spends. Use media exposure
   # metrics like
   # impressions, GRP etc. If not applicable, use spend instead.
-  , organic_vars = c("beef", 'chicken') # marketing activity without media spend
+  # , organic_vars = c("beef", 'chicken') # marketing activity without media spend
   # ,factor_vars = ("incidents") # specify which variables in context_vars or
   # organic_vars are factorial
   # prophet pulls in your date range from the date variable, but the window start
@@ -140,17 +139,17 @@ hyper_names(adstock = InputCollect$adstock, all_media = InputCollect$all_media)
 # or only one value, in which case you'd "fix" that hyperparameter.
 
 hyperparameters <- list(
-  beef_alphas = c(0.5, 3)
-  , beef_gammas = c(0.3, 1)
-  , beef_scales = c(0, 0.1)
-  , beef_shapes = c(0.0001, 10)
+  # beef_alphas = c(0.5, 3)
+  # , beef_gammas = c(0.3, 1)
+  # , beef_scales = c(0, 0.1)
+  # , beef_shapes = c(0.0001, 10)
+  #
+  # , chicken_alphas = c(0.5, 3)
+  # , chicken_gammas = c(0.3, 1)
+  # , chicken_scales = c(0, 0.1)
+  # , chicken_shapes = c(0.0001, 10)
 
-  , chicken_alphas = c(0.5, 3)
-  , chicken_gammas = c(0.3, 1)
-  , chicken_scales = c(0, 0.1)
-  , chicken_shapes = c(0.0001, 10)
-
-  , Influencer_S_alphas = c(0.5, 3)
+   Influencer_S_alphas = c(0.5, 3)
   , Influencer_S_gammas = c(0.3, 1)
   , Influencer_S_scales = c(0, 0.1)
   , Influencer_S_shapes = c(0.0001, 10)
@@ -244,7 +243,7 @@ OutputModels <- robyn_run(
   , cores = 16 # default ??? Test tese functions
   #, add_penalty_factor = FALSE # Untested feature. Use with caution.
   , iterations = 2000 # recommended for the dummy dataset
-  , trials = 5 # recommended for the dummy dataset
+  , trials = 6 # recommended for the dummy dataset
   , outputs = FALSE # outputs = FALSE disables direct model output
 )
 print(OutputModels)
@@ -296,7 +295,7 @@ print(OutputCollect)
 #### Step 4: Select and save the initial model
 ## Compare all model one-pagers and select one that mostly reflects your business reality
 print(OutputCollect)
-select_model <- "1_4_8" # select one from above
+select_model <- "3_7_4" # select one from above
 ExportedModel <- robyn_save(
   robyn_object = robyn_object # model object location and name
   , select_model = select_model # selected model ID
