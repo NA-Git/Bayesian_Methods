@@ -19,18 +19,18 @@ use_condaenv("r-reticulate")
 ################################################################
 #### Step 1: Load data
 getwd()
-setwd("/home/matt/DataspellProjects/mercury-ds/attribution/RobynProphet/")
+setwd('G:/My Drive/IN/Data/Robyn')
 ### Force multicore when using RStudio
 Sys.setenv(R_FUTURE_FORK_ENABLE = TRUE)
 options(future.fork.enable = TRUE)
-df <- read.csv('robyn_data.csv', fileEncoding = 'UTF-8-BOM')
+df <- read.csv('robyn_cortex_sparse.csv', fileEncoding = 'UTF-8-BOM')
 ## Check holidays from Prophet and select from your country
 data("dt_prophet_holidays")
 head(dt_prophet_holidays)
 
 ## Set robyn_object. It must have extension .RDS. The object name can
 # be different than Robyn, but ideally should not be moved
-robyn_object <- "/home/matt/Documents/IN/MyRobyn.RDS"
+robyn_object <- "'G:/My Drive/IN/Data/Robyn/MyRobyn.RDS"
 ################################################################
 ### Step 1.5: Data Planning
 # # DATE
@@ -135,30 +135,18 @@ hyper_names(adstock = InputCollect$adstock, all_media = InputCollect$all_media)
 # or only one value, in which case you'd "fix" that hyperparameter.
 
 hyperparameters <- list(
-  # beef_alphas = c(0.5, 3)
-  # , beef_gammas = c(0.3, 1)
-  # , beef_scales = c(0, 0.1)
-  # , beef_shapes = c(0.0001, 10)
-  #
-  # , chicken_alphas = c(0.5, 3)
-  # , chicken_gammas = c(0.3, 1)
-  # , chicken_scales = c(0, 0.1)
-  # , chicken_shapes = c(0.0001, 10)
-
-   Influencer_S_alphas = c(0.5, 3)
+    Influencer_S_alphas = c(0.5, 3)
   , Influencer_S_gammas = c(0.3, 1)
   , Influencer_S_scales = c(0, 0.1)
-  , Influencer_S_shapes = c(0.0001, 10)
-
+  , Influencer_S_shapes = c(2.0001, 10)
   , Radio_S_alphas = c(0.5, 3)
   , Radio_S_gammas = c(0.3, 1)
   , Radio_S_scales = c(0, 0.1)
-  , Radio_S_shapes = c(0.0001, 10)
-
+  , Radio_S_shapes = c(2.0001, 10)
   , Social_Media_S_alphas = c(0.5, 3)
   , Social_Media_S_gammas = c(0.3, 1)
   , Social_Media_S_scales = c(0, 0.1)
-  , Social_Media_S_shapes = c(0.0001, 10)
+  , Social_Media_S_shapes = c(2.0001, 10)
 )
 
 #### 2a-3: Third, add hyperparameters into robyn_inputs()
@@ -234,10 +222,10 @@ InputCollect <- robyn_inputs(InputCollect = InputCollect, calibration_input = ca
 ## Run all trials and iterations. Use ?robyn_run to check parameter definition
 OutputModels <- robyn_run(
   InputCollect = InputCollect # feed in all model specification
-  , cores = 16 # default ??? Test tese functions
+  , cores = NULL # default ??? Test tese functions
   #, add_penalty_factor = FALSE # Untested feature. Use with caution.
-  , iterations = 2000 # recommended for the dummy dataset
-  , trials = 6 # recommended for the dummy dataset
+  , iterations = 2500 # recommended for the dummy dataset
+  , trials = 15 # recommended for the dummy dataset
   , outputs = FALSE # outputs = FALSE disables direct model output
 )
 print(OutputModels)
@@ -250,8 +238,8 @@ OutputModels$convergence$moo_cloud_plot
 ## Calculate Pareto optimality, cluster and export results and plots. See ?robyn_outputs
 OutputCollect <- robyn_outputs(
   InputCollect, OutputModels
-  , pareto_fronts = 3
-  , calibration_constraint = 0.1 # range c(0.01, 0.1) & default at 0.1
+  , pareto_fronts = 1
+  , calibration_constraint =.1 #& default at 0.1
   , csv_out = "pareto" # "pareto" or "all"
   , clusters = TRUE # Set to TRUE to cluster similar models by ROAS. See ?robyn_clusters
   , plot_pareto = TRUE # Set to FALSE to deactivate plotting and saving model one-pagers
@@ -259,20 +247,20 @@ OutputCollect <- robyn_outputs(
 )
 print(OutputCollect)
 
-# Run & output in one go
-OutputCollect <- robyn_run(
-  InputCollect = InputCollect
-  , cores = NULL
-  , iterations = 300
-  , trials = 3
-  , add_penalty_factor = TRUE # Test this functionality
-  , outputs = TRUE
-  , pareto_fronts = 3
-  , csv_out = "pareto"
-  , clusters = TRUE
-  , plot_pareto = TRUE
-  , plot_folder = robyn_object
-)
+# # Run & output in one go
+# OutputCollect <- robyn_run(
+#   InputCollect = InputCollect
+#   , cores = NULL
+#   , iterations = 300
+#   , trials = 3
+#   , add_penalty_factor = TRUE # Test this functionality
+#   , outputs = TRUE
+#   , pareto_fronts = 3
+#   , csv_out = "pareto"
+#   , clusters = TRUE
+#   , plot_pareto = TRUE
+#   , plot_folder = robyn_object
+# )
 convergence <- robyn_converge(OutputModels)
 convergence$moo_distrb_plot
 convergence$moo_cloud_plot
@@ -289,7 +277,7 @@ print(OutputCollect)
 #### Step 4: Select and save the initial model
 ## Compare all model one-pagers and select one that mostly reflects your business reality
 print(OutputCollect)
-select_model <- "3_7_4" # select one from above
+select_model <- "3_108_2" # select one from above
 ExportedModel <- robyn_save(
   robyn_object = robyn_object # model object location and name
   , select_model = select_model # selected model ID
