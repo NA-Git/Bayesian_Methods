@@ -1,7 +1,8 @@
 ################################################################
 #### Step 0: Setup environment
+
 # It's best to install and load in this order, it has yet to fail
-install.packages("reticulate") # Install reticulate first if you haven't alreadyt
+install.packages("reticulate") # Install reticulate first if you haven't already
 remotes::install_github("facebookexperimental/Robyn/R")
 install.packages(c('nloptr', 'lares', 'dplyr', 'h2o', 'reticulate', 'tidyr'))
 library(Robyn)
