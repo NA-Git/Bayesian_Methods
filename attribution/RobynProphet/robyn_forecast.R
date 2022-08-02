@@ -26,7 +26,7 @@ setwd("C:/Users/norri/Documents/GitHub/mercury-ds/attribution/RobynProphet/")
 ### Force multicore when using RStudio
 Sys.setenv(R_FUTURE_FORK_ENABLE = TRUE)
 options(future.fork.enable = TRUE)
-df <- read.csv('robyn_cleaned.csv', fileEncoding = 'UTF-8-BOM')
+df <- read.csv('robyn_data_cleaned.csv', fileEncoding = 'UTF-8-BOM')
 
 ## Check holidays from Prophet and select from your country
 data("dt_prophet_holidays")
@@ -34,8 +34,7 @@ head(dt_prophet_holidays)
 
 ## Set robyn_object. It must have extension .RDS. The object name can
 # be different than Robyn, but ideally should not be moved
-robyn_object <- "C:/Users/norri/Documents/GitHub/mercury-ds/attribution/RobynProphet
-/MyRobyn.RDS"
+robyn_object <- "C:/Users/norri/Desktop/MyRobyn.RDS"
 ################################################################
 ### Step 1.5: Data Planning
 # # DATE
@@ -61,7 +60,7 @@ InputCollect <- robyn_inputs(
   # paid_media_vars must have same order as paid_media_spends. Use media exposure
   # metrics like
   # impressions, GRP etc. If not applicable, use spend instead.
-  # , organic_vars = c('chicken') # marketing activity without media spend
+  , organic_vars = c('chicken') # marketing activity without media spend
   # ,factor_vars = ("incidents") # specify which variables in context_vars or
   # organic_vars are factorial
   # prophet pulls in your date range from the date variable, but the window start
@@ -69,7 +68,7 @@ InputCollect <- robyn_inputs(
   # than your total dates
   , window_start = "2019-10-13"
   , window_end = "2021-05-09"
-  , adstock = "weibull_pdf" # geometric, weibull_cdf or weibull_pdf.
+  , adstock = "weibull_cdf" # geometric, weibull_cdf or weibull_pdf.
 )
 print(InputCollect)
 
@@ -137,12 +136,12 @@ plot_saturation(plot = TRUE)
 # or only one value, in which case you'd "fix" that hyperparameter.
 
 hyperparameters <- list(
-  #   chicken_alphas = c(0.5, 3)
-  # , chicken_gammas = c(0.3, 1)
-  # , chicken_scales = c(0, 0.1)
-  # , chicken_shapes = c(0.0001, 10)
+    chicken_alphas = c(0.5, 3)
+  , chicken_gammas = c(0.3, 1)
+  , chicken_scales = c(0, 0.1)
+  , chicken_shapes = c(0.0001, 10)
 
-   Influencer_S_alphas = c(0.5, 3)
+  , Influencer_S_alphas = c(0.5, 3)
   , Influencer_S_gammas = c(0.3, 1)
   , Influencer_S_scales = c(0, 0.1)
   , Influencer_S_shapes = c(0.0001, 10)
@@ -234,7 +233,7 @@ OutputModels <- robyn_run(
   , cores = NULL #
   #, add_penalty_factor = FALSE # Untested feature. Use with caution.
   , iterations = 2200 # recommended for a full run
-  , trials = 10 # recommended for a full run
+  , trials = 12 # recommended for a full run
   , outputs = FALSE # outputs = FALSE disables direct model output
 )
 print(OutputModels)
@@ -247,7 +246,7 @@ OutputModels$convergence$moo_cloud_plot
 ## Calculate Pareto optimality, cluster and export results and plots. See ?robyn_outputs
 OutputCollect <- robyn_outputs(
   InputCollect, OutputModels
-  , pareto_fronts = 3
+  , pareto_fronts = 1
   , calibration_constraint = 0.1 # range c(0.01, 0.1) & default at 0.1
   , csv_out = "pareto" # "pareto" or "all"
   , clusters = TRUE # Set to TRUE to cluster similar models by ROAS. See ?robyn_clusters
@@ -286,7 +285,7 @@ print(OutputCollect)
 #### Step 4: Select and save the initial model
 ## Compare all model one-pagers and select one that mostly reflects your business reality
 print(OutputCollect)
-select_model <- "1_4_8" # select one from above
+select_model <- "1_66_13" # select one from above
 ExportedModel <- robyn_save(
   robyn_object = robyn_object # model object location and name
   , select_model = select_model # selected model ID
@@ -315,7 +314,7 @@ AllocatorCollect1 <- robyn_allocator(
   , select_model = select_model
   , scenario = "max_historical_response"
   , channel_constr_low = 0.7
-  , channel_constr_up = c(1.2, 1.5, 1.5, 1.5, 1.5)
+  , channel_constr_up = c(1.2, 1.5, 1.5)
   , export = TRUE
   , date_min = "2019-12-08"
   , date_max = "2022-04-17"
@@ -331,8 +330,8 @@ AllocatorCollect2 <- robyn_allocator(
   , OutputCollect = OutputCollect
   , select_model = select_model
   , scenario = "max_response_expected_spend"
-  , channel_constr_low = c(0.7, 0.7, 0.7, 0.7, 0.7)
-  , channel_constr_up = c(1.2, 1.5, 1.5, 1.5, 1.5)
+  , channel_constr_low = c(0.7, 0.7, 0.7)
+  , channel_constr_up = c(1.2, 1.5, 1.5)
   , expected_spend = 1000000 # Total spend to be simulated
   , expected_spend_days = 7 # Duration of expected_spend in days
   , export = TRUE
@@ -346,11 +345,11 @@ plot(AllocatorCollect2)
 
 ## QA optimal response
 # Pick any media variable: InputCollect$all_media
-select_media <- "disp_S"
+select_media <- "Radio"
 # For paid_media_spends set metric_value as your optimal spend
 metric_value <- AllocatorCollect1$dt_optimOut[channels == select_media, optmSpendUnit]
 # # For paid_media_vars and organic_vars, manually pick a value
-# metric_value <- 10000
+metric_value <- 10000
 
 if (TRUE) {
   optimal_response_allocator <- AllocatorCollect1$dt_optimOut[
