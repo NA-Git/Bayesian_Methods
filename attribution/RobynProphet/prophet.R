@@ -14,7 +14,7 @@ library('lubridate')
 library('ggplot2')
 
 # this file was preformatted to work with Prophet
-df <- read.csv('G:/My Drive/To_Do/IN_DS/Prophet/np_prophet.csv')
+df <- read.csv('G:/My Drive/IN/Data/Prophet/np_prophet.csv')
 
 # to run prophet, there needs to be only two columns: ds, which is 
 # formatted in YYYY-MM-DD format, and y, which is usually sales
@@ -34,7 +34,7 @@ df_train <- subset(df, ds > '2020-03-01' & ds < '2022-02-27')
 
 df_test <- subset(df, ds > '2022-02-28' & ds < '2022-05-22')
 
-prophet_holidays <- read.csv("G:/My Drive/To_Do/IN_DS/Robyn/holidays.csv")
+prophet_holidays <- read.csv("G:/My Drive/IN/DATA/Robyn/dt_prophet_holidays.csv")
 prophet_holidays <- prophet_holidays[prophet_holidays$country == 'US', ]
 
 # I've chosen to define most parameters in the Prophet
@@ -139,8 +139,8 @@ fcst_y = fcst_12$y
 # # print(total)
 
 ## This can recreate the chart if need be
-## Chart <- data.frame(matrix(ncol = 5, nrow = 2))
-## colnames(Chart) <- c('RSS', 'RSME', 'RSME_12', 'MAPE', 'SMAPE')
+# Chart <- data.frame(matrix(ncol = 5, nrow = 2))
+# colnames(Chart) <- c('RSS', 'RSME', 'RSME_12', 'MAPE', 'SMAPE')
 
 # this section records the statistics for the chart
 
