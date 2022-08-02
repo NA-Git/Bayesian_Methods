@@ -408,19 +408,19 @@ if (TRUE) {
 
 ################################################################
 #### Step 7: Get budget allocation recommendation based on selected refresh runs
-
-# Run ?robyn_allocator to check parameter definition
-AllocatorCollect <- robyn_allocator(
-  robyn_object = robyn_object
-  #, select_build = 1 # Use third refresh model
-  , scenario = "max_response_expected_spend"
-  , channel_constr_low = c(0.7, 0.7, 0.7, 0.7, 0.7)
-  , channel_constr_up = c(1.2, 1.5, 1.5, 1.5, 1.5)
-  , expected_spend = 2000000 # Total spend to be simulated
-  , expected_spend_days = 14 # Duration of expected_spend in days
-)
-print(AllocatorCollect)
-plot(AllocatorCollect)
+#
+# # Run ?robyn_allocator to check parameter definition
+# AllocatorCollect <- robyn_allocator(
+#   robyn_object = robyn_object
+#   #, select_build = 1 # Use third refresh model
+#   , scenario = "max_response_expected_spend"
+#   , channel_constr_low = c(0.7, 0.7, 0.7, 0.7, 0.7)
+#   , channel_constr_up = c(1.2, 1.5, 1.5, 1.5, 1.5)
+#   , expected_spend = 2000000 # Total spend to be simulated
+#   , expected_spend_days = 14 # Duration of expected_spend in days
+# )
+# print(AllocatorCollect)
+# plot(AllocatorCollect)
 
 ################################################################
 #### Step 8: get marginal returns
@@ -438,49 +438,49 @@ plot(AllocatorCollect)
 ## are now used to accommodate this change. Also the returned output is a list now and
 ## contains also the plot.
 ## ------------------------------------------------------------------------------------------ ##
-
-# Get response for 80k from result saved in robyn_object
-Spend1 <- 60000
-Response1 <- robyn_response(
-  robyn_object = robyn_object
-  #, select_build = 1 # 2 means the second refresh model. 0 means the initial model
-  , media_metric = "influence_S"
-  , metric_value = Spend1)
-Response1$response / Spend1 # ROI for search 80k
-Response1$plot
-
-# Get response for 81k
-Spend2 <- Spend1 + 1000
-Response2 <- robyn_response(
-  robyn_object = robyn_object
-  #, select_build = 1
-  , media_metric = "influence_S"
-  , metric_value = Spend2)
-Response2$response / Spend2 # ROI for search 81k
-Response2$plot
-
-# Marginal ROI of next 1000$ from 80k spend level for search
-(Response2$response - Response1$response) / (Spend2 - Spend1)
-
-## Example of getting paid media exposure response curves
-imps <- 50000000
-response_imps <- robyn_response(
-  robyn_object = robyn_object
-  #, select_build = 1
-  , media_metric = "app_S"
-  , metric_value = imps)
-response_imps$response / imps * 1000
-response_imps$plot
-
-## Example of getting organic media exposure response curves
-sendings <- 30000
-response_sending <- robyn_response(
-  robyn_object = robyn_object
-  #, select_build = 1
-  , media_metric = "circular_S"
-  , metric_value = sendings)
-response_sending$response / sendings * 1000
-response_sending$plot
+#
+# # Get response for 80k from result saved in robyn_object
+# Spend1 <- 60000
+# Response1 <- robyn_response(
+#   robyn_object = robyn_object
+#   #, select_build = 1 # 2 means the second refresh model. 0 means the initial model
+#   , media_metric = "influence_S"
+#   , metric_value = Spend1)
+# Response1$response / Spend1 # ROI for search 80k
+# Response1$plot
+#
+# # Get response for 81k
+# Spend2 <- Spend1 + 1000
+# Response2 <- robyn_response(
+#   robyn_object = robyn_object
+#   #, select_build = 1
+#   , media_metric = "influence_S"
+#   , metric_value = Spend2)
+# Response2$response / Spend2 # ROI for search 81k
+# Response2$plot
+#
+# # Marginal ROI of next 1000$ from 80k spend level for search
+# (Response2$response - Response1$response) / (Spend2 - Spend1)
+#
+# ## Example of getting paid media exposure response curves
+# imps <- 50000000
+# response_imps <- robyn_response(
+#   robyn_object = robyn_object
+#   #, select_build = 1
+#   , media_metric = "app_S"
+#   , metric_value = imps)
+# response_imps$response / imps * 1000
+# response_imps$plot
+#
+# ## Example of getting organic media exposure response curves
+# sendings <- 30000
+# response_sending <- robyn_response(
+#   robyn_object = robyn_object
+#   #, select_build = 1
+#   , media_metric = "circular_S"
+#   , metric_value = sendings)
+# response_sending$response / sendings * 1000
+# response_sending$plot
 
 ################################################################
 #### Optional: get old model results
