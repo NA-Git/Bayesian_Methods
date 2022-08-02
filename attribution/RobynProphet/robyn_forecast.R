@@ -26,7 +26,7 @@ setwd("C:/Users/norri/Documents/GitHub/mercury-ds/attribution/RobynProphet/")
 ### Force multicore when using RStudio
 Sys.setenv(R_FUTURE_FORK_ENABLE = TRUE)
 options(future.fork.enable = TRUE)
-df <- read.csv('robyn_data.csv', fileEncoding = 'UTF-8-BOM')
+df <- read.csv('robyn_cleaned.csv', fileEncoding = 'UTF-8-BOM')
 
 ## Check holidays from Prophet and select from your country
 data("dt_prophet_holidays")
@@ -61,27 +61,24 @@ InputCollect <- robyn_inputs(
   # paid_media_vars must have same order as paid_media_spends. Use media exposure
   # metrics like
   # impressions, GRP etc. If not applicable, use spend instead.
-  , organic_vars = c("beef", 'chicken') # marketing activity without media spend
+  # , organic_vars = c('chicken') # marketing activity without media spend
   # ,factor_vars = ("incidents") # specify which variables in context_vars or
   # organic_vars are factorial
   # prophet pulls in your date range from the date variable, but the window start
   # and window end require you to put in dates that are in between and smaller
   # than your total dates
-  , window_start = "2019-10-21"
-  , window_end = "2021-04-19"
+  , window_start = "2019-10-13"
+  , window_end = "2021-05-09"
   , adstock = "weibull_pdf" # geometric, weibull_cdf or weibull_pdf.
 )
 print(InputCollect)
 
-
 #### 2a-2: Second, define and add hyperparameters
-#### finished 2a-2
 ## -------------------------------- NOTE v3.6.0 CHANGE !!! -------------------------- ##
 ## hyperparameter names needs to be base on paid_media_spends names. Run:
 hyper_names(adstock = InputCollect$adstock, all_media = InputCollect$all_media)
 plot_adstock(plot = TRUE)
 plot_saturation(plot = TRUE)
-hyper_names(adstock = InputCollect$adstock, all_media = InputCollect$all_media)
 ## to see correct hyperparameter names. Check GitHub homepage for background of change.
 ## Also calibration_input are required to be spend names.
 ## ----------------------------------------------------------------------------------- ##
@@ -101,19 +98,19 @@ hyper_names(adstock = InputCollect$adstock, all_media = InputCollect$all_media)
 
 ## 3. Hyperparameter interpretation & recommendation:
 
-###??? Geometric adstock: Theta is the only parameter and means fixed decay rate. Assuming TV
-###??? spend on day 1 is 100€ and theta = 0.7, then day 2 has 100*0.7=70€ worth of effect
-###??? carried-over from day 1, day 3 has 70*0.7=49€ from day 2 etc. Rule-of-thumb for common
-###? media genre: TV c(0.3, 0.8), OOH/Print/Radio c(0.1, 0.4), digital c(0, 0.3)
+# Geometric adstock: Theta is the only parameter and means fixed decay rate. Assuming TV
+# spend on day 1 is 100€ and theta = 0.7, then day 2 has 100*0.7=70€ worth of effect
+# carried-over from day 1, day 3 has 70*0.7=49€ from day 2 etc. Rule-of-thumb for common
+# media genre: TV c(0.3, 0.8), OOH/Print/Radio c(0.1, 0.4), digital c(0, 0.3)
 
-###??? Weibull CDF adstock: The Cumulative Distribution Function of Weibull has two parameters
-# , shape & scale, and has flexible decay rate, compared to Geometric adstock with fixed
+# Weibull CDF adstock: The Cumulative Distribution Function of Weibull has two parameters
+# shape & scale, and has flexible decay rate, compared to Geometric adstock with fixed
 # decay rate. The shape parameter controls the shape of the decay curve. Recommended
 # bound is c(0.0001, 2). The larger the shape, the more S-shape. The smaller, the more
 # L-shape. Scale controls the inflexion point of the decay curve. We recommend very
 # conservative bounce of c(0, 0.1), because scale increases the adstock half-life greatly.
 
-###??? Weibull PDF adstock: The Probability Density Function of the Weibull also has two
+# Weibull PDF adstock: The Probability Density Function of the Weibull also has two
 # parameters, shape & scale, and also has flexible decay rate as Weibull CDF. The
 # difference is that Weibull PDF offers lagged effect. When shape > 2, the curve peaks
 # after x = 0 and has NULL slope at x = 0, enabling lagged effect and sharper increase and
@@ -140,17 +137,12 @@ hyper_names(adstock = InputCollect$adstock, all_media = InputCollect$all_media)
 # or only one value, in which case you'd "fix" that hyperparameter.
 
 hyperparameters <- list(
-  beef_alphas = c(0.5, 3)
-  , beef_gammas = c(0.3, 1)
-  , beef_scales = c(0, 0.1)
-  , beef_shapes = c(0.0001, 10)
+  #   chicken_alphas = c(0.5, 3)
+  # , chicken_gammas = c(0.3, 1)
+  # , chicken_scales = c(0, 0.1)
+  # , chicken_shapes = c(0.0001, 10)
 
-  , chicken_alphas = c(0.5, 3)
-  , chicken_gammas = c(0.3, 1)
-  , chicken_scales = c(0, 0.1)
-  , chicken_shapes = c(0.0001, 10)
-
-  , Influencer_S_alphas = c(0.5, 3)
+   Influencer_S_alphas = c(0.5, 3)
   , Influencer_S_gammas = c(0.3, 1)
   , Influencer_S_scales = c(0, 0.1)
   , Influencer_S_shapes = c(0.0001, 10)
@@ -167,8 +159,6 @@ hyperparameters <- list(
 )
 
 #### 2a-3: Third, add hyperparameters into robyn_inputs()
-# ?robyn_inputs
-
 
 InputCollect <- robyn_inputs(InputCollect = InputCollect, hyperparameters = hyperparameters)
 print(InputCollect)
@@ -200,7 +190,7 @@ calibration_input <- data.frame(
   # Provided value must be tested on same campaign level in model and same metric as dep_var_type
   liftAbs = c(400000, 300000, 200000),
   # Spend within experiment: should match within a 10% error your spend on date range for each channel from dt_input
-  spend = c(357200000, 23410000, 146400000),
+  spend = c(357200000, 25810000, 188000000),
   # Confidence: if frequentist experiment, you may use 1 - pvalue
   confidence = c(0.85, 0.8, 0.99),
   # KPI measured: must match your dep_var
@@ -223,13 +213,13 @@ InputCollect <- robyn_inputs(InputCollect = InputCollect, calibration_input = ca
 #   , dep_var_type = "revenue"
 #   , prophet_vars = c("trend", "season", "holiday")
 #   , prophet_country = "US"
-#   , context_vars = c("competitor_sales_B", "events")
-#   , paid_media_spends = c("disp_S", "event_S", "email_S", "sm_S", "influence_S")
-#   , paid_media_vars = c("disp_S", "event_S", "email_S", "app_S", "banner_S")
-#   , organic_vars = c("circular_S")
-#   , factor_vars = c("events")
-#   , window_start = "2019-12-08"
-#   , window_end = "2022-04-17"
+#   , context_vars = c("cag_V")
+#   , paid_media_spends = c("Influencer_S", "Social_Media_S", "Radio_S")
+#   , paid_media_vars = c("Influencer_I", "Social_Media_I", "Radio_I")
+#   , organic_vars = c("chicken")
+#   # , factor_vars = c("events")
+#   , window_start = "2019-10-20"
+#   , window_end = "2021-04-18"
 #   , adstock = "weibull_pdf"
 #   , hyperparameters = hyperparameters # as in 2a-2 above
 #   , calibration_input = calibration_input # as in 2a-4 above
@@ -241,10 +231,10 @@ InputCollect <- robyn_inputs(InputCollect = InputCollect, calibration_input = ca
 ## Run all trials and iterations. Use ?robyn_run to check parameter definition
 OutputModels <- robyn_run(
   InputCollect = InputCollect # feed in all model specification
-  , cores = 16 # default ??? Test tese functions
+  , cores = NULL #
   #, add_penalty_factor = FALSE # Untested feature. Use with caution.
-  , iterations = 2000 # recommended for the dummy dataset
-  , trials = 5 # recommended for the dummy dataset
+  , iterations = 2200 # recommended for a full run
+  , trials = 10 # recommended for a full run
   , outputs = FALSE # outputs = FALSE disables direct model output
 )
 print(OutputModels)
@@ -270,8 +260,8 @@ print(OutputCollect)
 OutputCollect <- robyn_run(
   InputCollect = InputCollect
   , cores = NULL
-  , iterations = 300
-  , trials = 3
+  , iterations = 2000
+  , trials = 5
   , add_penalty_factor = TRUE # Test this functionality
   , outputs = TRUE
   , pareto_fronts = 3
@@ -389,17 +379,17 @@ if (TRUE) {
 ## 2, new variables are added
 
 # Run ?robyn_refresh to check parameter definition
-Robyn <- robyn_refresh(
-  robyn_object = robyn_object
-  , dt_input = df
-  , dt_holidays = dt_prophet_holidays
-  , refresh_steps = 4
-  , refresh_mode = "manual"
-  , refresh_iters = 1000 # 1k is estimation. Use refresh_mode = "manual" to try out.
-  , refresh_trials = 3
-  , plot_pareto = TRUE
-  , clusters = FALSE
-)
+# Robyn <- robyn_refresh(
+#   robyn_object = robyn_object
+#   , dt_input = df
+#   , dt_holidays = dt_prophet_holidays
+#   , refresh_steps = 4
+#   , refresh_mode = "manual"
+#   , refresh_iters = 1000 # 1k is estimation. Use refresh_mode = "manual" to try out.
+#   , refresh_trials = 3
+#   , plot_pareto = TRUE
+#   , clusters = FALSE
+# )
 
 ## Besides plots: there're 4 csv output saved in the folder for further usage
 # report_hyperparameters.csv, hyperparameters of all selected model for reporting
@@ -408,14 +398,14 @@ Robyn <- robyn_refresh(
 # report_alldecomp_matrix.csv,all decomposition vectors of independent variables
 
 # Export this refreshed model you wish to export
-last_refresh_num <- sum(grepl('listRefresh', names(Robyn))) + 1 # Pick any refresh.
-# Here's the final refresh using the model recommended by least combined normalized nrmse and decomp.rssd
-ExportedRefreshModel <- robyn_save(
-  robyn_object = robyn_object
-  , select_model = Robyn[[last_refresh_num]]$OutputCollect$selectID
-  , InputCollect = Robyn[[last_refresh_num]]$InputCollect
-  , OutputCollect = Robyn[[last_refresh_num]]$OutputCollect
-)
+# last_refresh_num <- sum(grepl('listRefresh', names(Robyn))) + 1 # Pick any refresh.
+# # Here's the final refresh using the model recommended by least combined normalized nrmse and decomp.rssd
+# ExportedRefreshModel <- robyn_save(
+#   robyn_object = robyn_object
+#   , select_model = Robyn[[last_refresh_num]]$OutputCollect$selectID
+#   , InputCollect = Robyn[[last_refresh_num]]$InputCollect
+#   , OutputCollect = Robyn[[last_refresh_num]]$OutputCollect
+# )
 
 ################################################################
 #### Step 7: Get budget allocation recommendation based on selected refresh runs
