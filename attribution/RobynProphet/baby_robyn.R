@@ -11,8 +11,9 @@ setwd("G:/My Drive/IN/Data/Robyn/")
 
 ################################################################
 #### Step 1: Create file for robyn_forecast.R without crashing
-df <- read.csv('tyson_imputation.csv')
-imp <- amelia(df, m = 5, idvars = 'Date', max.resample = 1000)
+df <- read.csv('robyn_cortex_sparse.csv', fileEncoding = 'UTF-8-BOM')
+imp <- amelia(df, m = 4, idvars = 'DATE', max.resample = 500)
+
 
 imp1 <- imp$imputations$imp1
 imp2 <- imp$imputations$imp2

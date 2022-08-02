@@ -51,19 +51,19 @@ InputCollect <- robyn_inputs(
   # "weekday" & "holiday"
   , prophet_country = "US" # input one country of dt_prophet_holidays
   , context_vars = ("cag_V") # e.g. competitors, discount, unemployment etc
-  , paid_media_spends = c("Influencer_S", "Social_Media_S", "Radio_S") # mandator input
-  , paid_media_vars = c("Influencer_I", "Social_Media_I", "Radio_I") # mandatory.
+  , paid_media_spends = c("coupons_S", "store_other_S", "event_S") # mandator input
+  , paid_media_vars = c("coupons_I", "store_other_I", "event_I") # mandatory.
   # paid_media_vars must have same order as paid_media_spends. Use media exposure
   # metrics like
   # impressions, GRP etc. If not applicable, use spend instead.
-  # , organic_vars = c("beef", 'chicken') # marketing activity without media spend
+  , organic_vars = ('circular_S') # marketing activity without media spend
   # ,factor_vars = ("incidents") # specify which variables in context_vars or
   # organic_vars are factorial
   # prophet pulls in your date range from the date variable, but the window start
   # and window end require you to put in dates that are in between and smaller
   # than your total dates
   , window_start = "2019-10-21"
-  , window_end = "2021-04-19"
+  , window_end = "2021-08-10"
   , adstock = "weibull_pdf" # geometric, weibull_cdf or weibull_pdf.
 )
 print(InputCollect)
