@@ -20,18 +20,19 @@ use_condaenv("r-reticulate")
 ################################################################
 #### Step 1: Load data
 getwd()
-setwd('G:/My Drive/IN/Data/Robyn')
+setwd('/home/matt/Documents/IN/Robyn')
 ### Force multicore when using RStudio
 Sys.setenv(R_FUTURE_FORK_ENABLE = TRUE)
 options(future.fork.enable = TRUE)
-df <- read.csv('robyn_cortex_sparse.csv', fileEncoding = 'UTF-8-BOM')
+df <- read.csv('/home/matt/DataspellProjects/mercury-ds/attribution/RobynProphet/robyn_data_cleaned.csv',
+fileEncoding = 'UTF-8-BOM')
 ## Check holidays from Prophet and select from your country
 data("dt_prophet_holidays")
 head(dt_prophet_holidays)
 
 ## Set robyn_object. It must have extension .RDS. The object name can
 # be different than Robyn, but ideally should not be moved
-robyn_object <- "'G:/My Drive/IN/Data/Robyn/MyRobyn.RDS"
+robyn_object <- "/home/matt/Documents/IN/MyRobyn.RDS"
 ################################################################
 ### Step 1.5: Data Planning
 # # DATE
@@ -52,20 +53,20 @@ InputCollect <- robyn_inputs(
   # "weekday" & "holiday"
   , prophet_country = "US" # input one country of dt_prophet_holidays
   , context_vars = ("cag_V") # e.g. competitors, discount, unemployment etc
-  , paid_media_spends = c("coupons_S", "store_other_S", "event_S") # mandator input
-  , paid_media_vars = c("coupons_I", "store_other_I", "event_I") # mandatory.
+  , paid_media_spends = c("Radio_S", "Influencer_S", "Social_Media_S") # mandator input
+  , paid_media_vars = c("Radio_I", "Influencer_I", "Social_Media_I") # mandatory.
   # paid_media_vars must have same order as paid_media_spends. Use media exposure
   # metrics like
   # impressions, GRP etc. If not applicable, use spend instead.
-  , organic_vars = ('circular_S') # marketing activity without media spend
+  # , organic_vars = ('circular_S') # marketing activity without media spend
   # ,factor_vars = ("incidents") # specify which variables in context_vars or
   # organic_vars are factorial
   # prophet pulls in your date range from the date variable, but the window start
   # and window end require you to put in dates that are in between and smaller
   # than your total dates
   , window_start = "2019-10-21"
-  , window_end = "2021-08-10"
-  , adstock = "weibull_pdf" # geometric, weibull_cdf or weibull_pdf.
+  , window_end = "2021-05-02"
+  , adstock = "weibull_cdf" # geometric, weibull_cdf or weibull_pdf.
 )
 print(InputCollect)
 
@@ -182,7 +183,7 @@ calibration_input <- data.frame(
   # Provided value must be tested on same campaign level in model and same metric as dep_var_type
   liftAbs = c(400000, 300000, 200000),
   # Spend within experiment: should match within a 10% error your spend on date range for each channel from dt_input
-  spend = c(357200000, 23410000, 146400000),
+  spend = c(357200000, 25810000, 188000000),
   # Confidence: if frequentist experiment, you may use 1 - pvalue
   confidence = c(0.85, 0.8, 0.99),
   # KPI measured: must match your dep_var
@@ -225,8 +226,8 @@ OutputModels <- robyn_run(
   InputCollect = InputCollect # feed in all model specification
   , cores = NULL # default ??? Test tese functions
   #, add_penalty_factor = FALSE # Untested feature. Use with caution.
-  , iterations = 2500 # recommended for the dummy dataset
-  , trials = 15 # recommended for the dummy dataset
+  , iterations = 3000 # recommended for the dummy dataset
+  , trials = 17 # recommended for the dummy dataset
   , outputs = FALSE # outputs = FALSE disables direct model output
 )
 print(OutputModels)
@@ -278,15 +279,7 @@ print(OutputCollect)
 #### Step 4: Select and save the initial model
 ## Compare all model one-pagers and select one that mostly reflects your business reality
 print(OutputCollect)
-select_model <- "3_108_2" # select one from above
-ExportedModel <- robyn_save(
-  robyn_object = robyn_object # model object location and name
-  , select_model = select_model # selected model ID
-  , InputCollect = InputCollect
-  , OutputCollect = OutputCollect
-)
-print(ExportedModel)
-plot(ExportedModel)
+yes
 
 ################################################################
 #### Step 5: Get budget allocation based on the selected model above
@@ -307,7 +300,7 @@ AllocatorCollect1 <- robyn_allocator(
   , select_model = select_model
   , scenario = "max_historical_response"
   , channel_constr_low = 0.7
-  , channel_constr_up = c(1.2, 1.5, 1.5, 1.5, 1.5)
+  , channel_constr_up = c(1.2, 1.5, 1.5)
   , export = TRUE
   , date_min = "2019-12-08"
   , date_max = "2022-04-17"
@@ -323,8 +316,8 @@ AllocatorCollect2 <- robyn_allocator(
   , OutputCollect = OutputCollect
   , select_model = select_model
   , scenario = "max_response_expected_spend"
-  , channel_constr_low = c(0.7, 0.7, 0.7, 0.7, 0.7)
-  , channel_constr_up = c(1.2, 1.5, 1.5, 1.5, 1.5)
+  , channel_constr_low = c(0.7)
+  , channel_constr_up = c(1.5, 1.5, 1.5)
   , expected_spend = 1000000 # Total spend to be simulated
   , expected_spend_days = 7 # Duration of expected_spend in days
   , export = TRUE
@@ -338,11 +331,11 @@ plot(AllocatorCollect2)
 
 ## QA optimal response
 # Pick any media variable: InputCollect$all_media
-select_media <- "disp_S"
+select_media <- "Influencer_I"
 # For paid_media_spends set metric_value as your optimal spend
 metric_value <- AllocatorCollect1$dt_optimOut[channels == select_media, optmSpendUnit]
 # # For paid_media_vars and organic_vars, manually pick a value
-# metric_value <- 10000
+metric_value <- 10000
 
 if (TRUE) {
   optimal_response_allocator <- AllocatorCollect1$dt_optimOut[
