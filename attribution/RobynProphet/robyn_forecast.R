@@ -20,20 +20,19 @@ conda_install("r-reticulate", "nevergrad", pip = TRUE)
 use_condaenv("r-reticulate")
 ################################################################
 #### Step 1: Load data
-getwd()
-setwd('/home/matt/Documents/IN/Robyn')
+# getwd()
+# setwd('/home/matt/Documents/IN/Robyn')
 ### Force multicore when using RStudio
 Sys.setenv(R_FUTURE_FORK_ENABLE = TRUE)
 options(future.fork.enable = TRUE)
-df <- read.csv('/home/matt/DataspellProjects/mercury-ds/attribution/RobynProphet/robyn_data_cleaned.csv',
-fileEncoding = 'UTF-8-BOM')
+df <- read.csv('C:/Users/norri/Documents/GitHub/mercury-ds/attribution/RobynProphet/robyn_data_cleaned.csv', fileEncoding = 'UTF-8-BOM')
 ## Check holidays from Prophet and select from your country
 data("dt_prophet_holidays")
 head(dt_prophet_holidays)
 
 ## Set robyn_object. It must have extension .RDS. The object name can
 # be different than Robyn, but ideally should not be moved
-robyn_object <- "/home/matt/Documents/IN/MyRobyn.RDS"
+robyn_object <- "C:/Users/norri/Desktop/MyRobyn.RDS"
 ################################################################
 ### Step 1.5: Data Planning
 # # DATE
@@ -53,13 +52,13 @@ InputCollect <- robyn_inputs(
   , prophet_vars = c("trend", "season", "holiday") # "trend","season",
   # "weekday" & "holiday"
   , prophet_country = "US" # input one country of dt_prophet_holidays
-  , context_vars = ("cag_V") # e.g. competitors, discount, unemployment etc
+  , context_vars = c("cag_V") # e.g. competitors, discount, unemployment etc
   , paid_media_spends = c("Radio_S", "Influencer_S", "Social_Media_S") # mandator input
   , paid_media_vars = c("Radio_I", "Influencer_I", "Social_Media_I") # mandatory.
   # paid_media_vars must have same order as paid_media_spends. Use media exposure
   # metrics like
   # impressions, GRP etc. If not applicable, use spend instead.
-  # , organic_vars = ('circular_S') # marketing activity without media spend
+  , organic_vars = ('chicken') # marketing activity without media spend
   # ,factor_vars = ("incidents") # specify which variables in context_vars or
   # organic_vars are factorial
   # prophet pulls in your date range from the date variable, but the window start
@@ -67,7 +66,7 @@ InputCollect <- robyn_inputs(
   # than your total dates
   , window_start = "2019-10-21"
   , window_end = "2021-05-02"
-  , adstock = "weibull_cdf" # geometric, weibull_cdf or weibull_pdf.
+  , adstock = "weibull_pdf" # geometric, weibull_cdf or weibull_pdf.
 )
 print(InputCollect)
 
@@ -79,7 +78,6 @@ print(InputCollect)
 hyper_names(adstock = InputCollect$adstock, all_media = InputCollect$all_media)
 plot_adstock(plot = TRUE)
 plot_saturation(plot = TRUE)
-hyper_names(adstock = InputCollect$adstock, all_media = InputCollect$all_media)
 ## to see correct hyperparameter names. Check GitHub homepage for background of change.
 ## Also calibration_input are required to be spend names.
 ## ----------------------------------------------------------------------------------- ##
@@ -138,7 +136,11 @@ hyper_names(adstock = InputCollect$adstock, all_media = InputCollect$all_media)
 # or only one value, in which case you'd "fix" that hyperparameter.
 
 hyperparameters <- list(
-    Influencer_S_alphas = c(0.5, 3)
+    chicken_alphas = c(0.5, 3)
+  , chicken_gammas = c(0.3, 1)
+  , chicken_scales = c(0, 0.1)
+  , chicken_shapes = c(2.0001, 10)
+  , Influencer_S_alphas = c(0.5, 3)
   , Influencer_S_gammas = c(0.3, 1)
   , Influencer_S_scales = c(0, 0.1)
   , Influencer_S_shapes = c(2.0001, 10)
@@ -225,10 +227,11 @@ InputCollect <- robyn_inputs(InputCollect = InputCollect, calibration_input = ca
 ## Run all trials and iterations. Use ?robyn_run to check parameter definition
 OutputModels <- robyn_run(
   InputCollect = InputCollect # feed in all model specification
-  , cores = NULL # default ??? Test tese functions
+  , seed = 42
+  , cores = 16 # default ??? Test tese functions
   #, add_penalty_factor = FALSE # Untested feature. Use with caution.
-  , iterations = 3000 # recommended for the dummy dataset
-  , trials = 17 # recommended for the dummy dataset
+  , iterations = 2000 # recommended for the dummy dataset
+  , trials = 20 # recommended for the dummy dataset
   , outputs = FALSE # outputs = FALSE disables direct model output
 )
 print(OutputModels)
