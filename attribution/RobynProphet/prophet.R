@@ -7,11 +7,13 @@
 # install.packages('timeDate')
 # install.packages('dplyr')
 # install.packages('lubridate')
+install.packages('reshape2')
 
 library('prophet')
 library('dplyr')
 library('lubridate')
 library('ggplot2')
+library('reshape2')
 
 # this file was preformatted to work with Prophet
 df <- read.csv('G:/My Drive/IN/Data/Prophet/np_prophet.csv')
@@ -125,6 +127,7 @@ leg.txt <- c("Observed", "Predicted", "Pred. Lower Bound", "Pred. Upper Bound")
 legend('top', leg.txt, bg = "gray90", col=2:5, pch=1)
 axis(1, fcst_12$ds, format(fcst_12$ds, "%b %d"), cex.axis = .7)
 box()
+
 
 ###### Calculations of RMSE and two for RSS for the past 12 weeks ####
 test = df_test$y

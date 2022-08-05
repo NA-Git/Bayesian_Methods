@@ -1,7 +1,6 @@
 ################################################################
 #### Step 0: Setup environment
 
-
 # It's best to install and load in this order, it has yet to fail
 install.packages("reticulate") # Install reticulate first if you haven't already
 remotes::install_github("facebookexperimental/Robyn/R")
@@ -21,11 +20,11 @@ use_condaenv("r-reticulate")
 ################################################################
 #### Step 1: Load data
 # getwd()
-# setwd('/home/matt/Documents/IN/Robyn')
+setwd('G:/My Drive/IN/Data/Robyn')
 ### Force multicore when using RStudio
 Sys.setenv(R_FUTURE_FORK_ENABLE = TRUE)
 options(future.fork.enable = TRUE)
-df <- read.csv('C:/Users/norri/Documents/GitHub/mercury-ds/attribution/RobynProphet/robyn_data_cleaned.csv', fileEncoding = 'UTF-8-BOM')
+df <- read.csv('tyson_robyn_mean.csv', fileEncoding = 'UTF-8-BOM')
 ## Check holidays from Prophet and select from your country
 data("dt_prophet_holidays")
 head(dt_prophet_holidays)
@@ -53,12 +52,13 @@ InputCollect <- robyn_inputs(
   # "weekday" & "holiday"
   , prophet_country = "US" # input one country of dt_prophet_holidays
   , context_vars = c("cag_V") # e.g. competitors, discount, unemployment etc
-  , paid_media_spends = c("Radio_S", "Influencer_S", "Social_Media_S") # mandator input
-  , paid_media_vars = c("Radio_I", "Influencer_I", "Social_Media_I") # mandatory.
+  , paid_media_spends = c("bloggers_S", "coupon_S", "display_S", 'radio_S') # mandator
+  # input
+  , paid_media_vars = c("bloggers_I", "coupon_I", "display_I", 'radio_I') # mandatory.
   # paid_media_vars must have same order as paid_media_spends. Use media exposure
   # metrics like
   # impressions, GRP etc. If not applicable, use spend instead.
-  , organic_vars = ('chicken') # marketing activity without media spend
+  , organic_vars = c('chicken', 'beef') # marketing activity without media spend
   # ,factor_vars = ("incidents") # specify which variables in context_vars or
   # organic_vars are factorial
   # prophet pulls in your date range from the date variable, but the window start
@@ -66,7 +66,7 @@ InputCollect <- robyn_inputs(
   # than your total dates
   , window_start = "2019-10-21"
   , window_end = "2021-05-02"
-  , adstock = "weibull_pdf" # geometric, weibull_cdf or weibull_pdf.
+  , adstock = "weibull_cdf" # geometric, weibull_cdf or weibull_pdf.
 )
 print(InputCollect)
 
@@ -75,9 +75,10 @@ print(InputCollect)
 #### finished 2a-2
 ## -------------------------------- NOTE v3.6.0 CHANGE !!! -------------------------- ##
 ## hyperparameter names needs to be base on paid_media_spends names. Run:
-hyper_names(adstock = InputCollect$adstock, all_media = InputCollect$all_media)
+hyper_names(adstock = InputCollect$adstock, all_media =InputCollect$all_media)
 plot_adstock(plot = TRUE)
 plot_saturation(plot = TRUE)
+hyper_limits()
 ## to see correct hyperparameter names. Check GitHub homepage for background of change.
 ## Also calibration_input are required to be spend names.
 ## ----------------------------------------------------------------------------------- ##
@@ -136,22 +137,30 @@ plot_saturation(plot = TRUE)
 # or only one value, in which case you'd "fix" that hyperparameter.
 
 hyperparameters <- list(
-    chicken_alphas = c(0.5, 3)
+  beef_alphas = c(0.5, 3)
+  , beef_gammas = c(0.3, 1)
+  , beef_scales = c(0, 0.1)
+  , beef_shapes = c(2.0001, 10)
+  , bloggers_S_alphas = c(0.5, 3)
+  , bloggers_S_gammas = c(0.3, 1)
+  , bloggers_S_scales = c(0, 0.1)
+  , bloggers_S_shapes = c(2.0001, 10)
+  , chicken_alphas = c(0.5, 3)
   , chicken_gammas = c(0.3, 1)
   , chicken_scales = c(0, 0.1)
   , chicken_shapes = c(2.0001, 10)
-  , Influencer_S_alphas = c(0.5, 3)
-  , Influencer_S_gammas = c(0.3, 1)
-  , Influencer_S_scales = c(0, 0.1)
-  , Influencer_S_shapes = c(2.0001, 10)
-  , Radio_S_alphas = c(0.5, 3)
-  , Radio_S_gammas = c(0.3, 1)
-  , Radio_S_scales = c(0, 0.1)
-  , Radio_S_shapes = c(2.0001, 10)
-  , Social_Media_S_alphas = c(0.5, 3)
-  , Social_Media_S_gammas = c(0.3, 1)
-  , Social_Media_S_scales = c(0, 0.1)
-  , Social_Media_S_shapes = c(2.0001, 10)
+  , coupon_S_alphas = c(0.5, 3)
+  , coupon_S_gammas = c(0.3, 1)
+  , coupon_S_scales = c(0, 0.1)
+  , coupon_S_shapes = c(2.0001, 10)
+  , display_S_alphas = c(0.5, 3)
+  , display_S_gammas = c(0.3, 1)
+  , display_S_scales = c(0, 0.1)
+  , display_S_shapes = c(2.0001, 10)
+  , radio_S_alphas = c(0.5, 3)
+  , radio_S_gammas = c(0.3, 1)
+  , radio_S_scales = c(0, 0.1)
+  , radio_S_shapes = c(2.0001, 10)
 )
 
 #### 2a-3: Third, add hyperparameters into robyn_inputs()
@@ -227,11 +236,11 @@ InputCollect <- robyn_inputs(InputCollect = InputCollect, calibration_input = ca
 ## Run all trials and iterations. Use ?robyn_run to check parameter definition
 OutputModels <- robyn_run(
   InputCollect = InputCollect # feed in all model specification
-  , seed = 42
+  # , seed = 42
   , cores = 16 # default ??? Test tese functions
   #, add_penalty_factor = FALSE # Untested feature. Use with caution.
-  , iterations = 2000 # recommended for the dummy dataset
-  , trials = 20 # recommended for the dummy dataset
+  , iterations = 1000 # try to increase to converge faster
+  , trials = 5 # try to increase to converge faster
   , outputs = FALSE # outputs = FALSE disables direct model output
 )
 print(OutputModels)
