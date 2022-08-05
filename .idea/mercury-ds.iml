@@ -8,7 +8,7 @@
     <content url="file://$MODULE_DIR$" />
     <content url="file://$MODULE_DIR$" />
     <content url="file://$MODULE_DIR$" />
-    <orderEntry type="jdk" jdkName="Python 3.8 (mercury-ds)" jdkType="Python SDK" />
+    <orderEntry type="jdk" jdkName="Python 3.8 (Attribution_EDA)" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
   </component>
   <component name="PackageRequirementsSettings">
