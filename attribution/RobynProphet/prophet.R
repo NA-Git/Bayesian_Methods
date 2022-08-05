@@ -7,11 +7,13 @@
 # install.packages('timeDate')
 # install.packages('dplyr')
 # install.packages('lubridate')
+install.packages('reshape2')
 
 library('prophet')
 library('dplyr')
 library('lubridate')
 library('ggplot2')
+library('reshape2')
 
 # this file was preformatted to work with Prophet
 df <- read.csv('G:/My Drive/IN/Data/Prophet/np_prophet.csv')
@@ -126,21 +128,22 @@ legend('top', leg.txt, bg = "gray90", col=2:5, pch=1)
 axis(1, fcst_12$ds, format(fcst_12$ds, "%b %d"), cex.axis = .7)
 box()
 
+
 ###### Calculations of RMSE and two for RSS for the past 12 weeks ####
 test = df_test$y
 fcst_y = fcst_12$y
 
-# # Backup RSS from the 12 week prediction period
-# total = 0
-# for (i in 1:12) {
-#   temp = (fcst_y[i] - test[i])^2
-#   total = total + temp
-# }
-# # print(total)
+# Backup RSS from the 12 week prediction period
+total = 0
+for (i in 1:12) {
+  temp = (fcst_y[i] - test[i])^2
+  total = total + temp
+}
+# print(total)
 
 ## This can recreate the chart if need be
-# Chart <- data.frame(matrix(ncol = 5, nrow = 2))
-# colnames(Chart) <- c('RSS', 'RSME', 'RSME_12', 'MAPE', 'SMAPE')
+Chart <- data.frame(matrix(ncol = 5, nrow = 2))
+colnames(Chart) <- c('RSS', 'RSME', 'RSME_12', 'MAPE', 'SMAPE')
 
 # this section records the statistics for the chart
 
