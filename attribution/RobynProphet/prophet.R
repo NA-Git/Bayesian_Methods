@@ -133,17 +133,17 @@ box()
 test = df_test$y
 fcst_y = fcst_12$y
 
-# # Backup RSS from the 12 week prediction period
-# total = 0
-# for (i in 1:12) {
-#   temp = (fcst_y[i] - test[i])^2
-#   total = total + temp
-# }
-# # print(total)
+# Backup RSS from the 12 week prediction period
+total = 0
+for (i in 1:12) {
+  temp = (fcst_y[i] - test[i])^2
+  total = total + temp
+}
+# print(total)
 
 ## This can recreate the chart if need be
-# Chart <- data.frame(matrix(ncol = 5, nrow = 2))
-# colnames(Chart) <- c('RSS', 'RSME', 'RSME_12', 'MAPE', 'SMAPE')
+Chart <- data.frame(matrix(ncol = 5, nrow = 2))
+colnames(Chart) <- c('RSS', 'RSME', 'RSME_12', 'MAPE', 'SMAPE')
 
 # this section records the statistics for the chart
 

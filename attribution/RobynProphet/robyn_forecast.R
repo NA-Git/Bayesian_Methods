@@ -1,6 +1,5 @@
 ################################################################
 #### Step 0: Setup environment
-
 # It's best to install and load in this order, it has yet to fail
 install.packages("reticulate") # Install reticulate first if you haven't already
 remotes::install_github("facebookexperimental/Robyn/R")
@@ -19,45 +18,36 @@ conda_install("r-reticulate", "nevergrad", pip = TRUE)
 use_condaenv("r-reticulate")
 ################################################################
 #### Step 1: Load data
-# getwd()
 setwd('G:/My Drive/IN/Data/Robyn')
-### Force multicore when using RStudio
-Sys.setenv(R_FUTURE_FORK_ENABLE = TRUE)
+Sys.setenv(R_FUTURE_FORK_ENABLE = TRUE) # Force multicore when using RStudio
 options(future.fork.enable = TRUE)
 df <- read.csv('tyson_robyn_mean.csv', fileEncoding = 'UTF-8-BOM')
-## Check holidays from Prophet and select from your country
+# Check holidays from Prophet enables other seasonanility features
 data("dt_prophet_holidays")
 head(dt_prophet_holidays)
-
-## Set robyn_object. It must have extension .RDS. The object name can
-# be different than Robyn, but ideally should not be moved
-robyn_object <- "C:/Users/norri/Desktop/MyRobyn.RDS"
+# Set robyn_object. Ideally should not be moved
+robyn_object <- "C:/Users/norri/Music/MyRobyn.RDS"
 ################################################################
 ### Step 1.5: Data Planning
-# # DATE
 # names(df)[names(df) == "Date"] <- "DATE"
 # df$DATE <- as.POSIXlt(df$DATE, "%Y-%m-%d", tz = "UTC", origin = "2019-09-30")
-
 ################################################################
 #### Step 2a: For first time user: Model specification in 4 steps
 #### 2a-1: First, specify input variables
-
 InputCollect <- robyn_inputs(
   dt_input = df
   , dt_holidays = dt_prophet_holidays
   , date_var = "DATE" # date format must be "2020-01-01"
   , dep_var = "revenue" # there should be only one dependent variable
   , dep_var_type = "revenue" # "revenue" (ROI) or "conversion" (CPA)
-  , prophet_vars = c("trend", "season", "holiday") # "trend","season",
-  # "weekday" & "holiday"
+  , prophet_vars = c("trend", "season", "holiday") # "trend","season", "holiday"
   , prophet_country = "US" # input one country of dt_prophet_holidays
   , context_vars = c("cag_V") # e.g. competitors, discount, unemployment etc
-  , paid_media_spends = c("bloggers_S", "coupon_S", "display_S", 'radio_S') # mandator
-  # input
-  , paid_media_vars = c("bloggers_I", "coupon_I", "display_I", 'radio_I') # mandatory.
-  # paid_media_vars must have same order as paid_media_spends. Use media exposure
-  # metrics like
-  # impressions, GRP etc. If not applicable, use spend instead.
+  , paid_media_spends = c("bloggers_S", "coupon_S", "display_S", 'radio_S')
+  , paid_media_vars = c("bloggers_I", "coupon_I", "display_I", 'radio_I')
+  # paid_media_vars are mandatory like paid_media_spends, and must have same order as
+  # paid_media_spends. Use media exposure metrics like impressions,
+  # GRP etc. If not applicable, use spend instead.
   , organic_vars = c('chicken', 'beef') # marketing activity without media spend
   # ,factor_vars = ("incidents") # specify which variables in context_vars or
   # organic_vars are factorial
@@ -66,14 +56,11 @@ InputCollect <- robyn_inputs(
   # than your total dates
   , window_start = "2019-10-21"
   , window_end = "2021-05-02"
-  , adstock = "weibull_cdf" # geometric, weibull_cdf or weibull_pdf.
+  , adstock = "weibull_pdf" # geometric, weibull_cdf or weibull_pdf.
 )
 print(InputCollect)
 
-
 #### 2a-2: Second, define and add hyperparameters
-#### finished 2a-2
-## -------------------------------- NOTE v3.6.0 CHANGE !!! -------------------------- ##
 ## hyperparameter names needs to be base on paid_media_spends names. Run:
 hyper_names(adstock = InputCollect$adstock, all_media =InputCollect$all_media)
 plot_adstock(plot = TRUE)
@@ -86,55 +73,12 @@ hyper_limits()
 
 ## 1. IMPORTANT: set plot = TRUE to see helper plots of hyperparameter's
 # effect in transformation
-
-## Write function here to pass through all the info
-## 2. Get correct hyperparameter names:
+# Write function here to pass through all the info
+# 2. Get correct hyperparameter names:
 # All variables in paid_media_spends and organic_vars require hyperparameter and will be
 # transformed by adstock & saturation.
 
-######### Run hyper_names() as above to get correct media hyperparameter names. All names in
-######### hyperparameters must equal names from hyper_names(), case sensitive.
-######### Run ?hyper_names to check parameter definition.
 
-## 3. Hyperparameter interpretation & recommendation:
-
-###??? Geometric adstock: Theta is the only parameter and means fixed decay rate. Assuming TV
-###??? spend on day 1 is 100€ and theta = 0.7, then day 2 has 100*0.7=70€ worth of effect
-###??? carried-over from day 1, day 3 has 70*0.7=49€ from day 2 etc. Rule-of-thumb for common
-###? media genre: TV c(0.3, 0.8), OOH/Print/Radio c(0.1, 0.4), digital c(0, 0.3)
-
-###??? Weibull CDF adstock: The Cumulative Distribution Function of Weibull has two parameters
-# , shape & scale, and has flexible decay rate, compared to Geometric adstock with fixed
-# decay rate. The shape parameter controls the shape of the decay curve. Recommended
-# bound is c(0.0001, 2). The larger the shape, the more S-shape. The smaller, the more
-# L-shape. Scale controls the inflexion point of the decay curve. We recommend very
-# conservative bounce of c(0, 0.1), because scale increases the adstock half-life greatly.
-
-###??? Weibull PDF adstock: The Probability Density Function of the Weibull also has two
-# parameters, shape & scale, and also has flexible decay rate as Weibull CDF. The
-# difference is that Weibull PDF offers lagged effect. When shape > 2, the curve peaks
-# after x = 0 and has NULL slope at x = 0, enabling lagged effect and sharper increase and
-# decrease of adstock, while the scale parameter indicates the limit of the relative
-# position of the peak at x axis; when 1 < shape < 2, the curve peaks after x = 0 and has
-# infinite positive slope at x = 0, enabling lagged effect and slower increase and decrease
-# of adstock, while scale has the same effect as above; when shape = 1, the curve peaks at
-# x = 0 and reduces to exponential decay, while scale controls the inflexion point; when
-# 0 < shape < 1, the curve peaks at x = 0 and has increasing decay, while scale controls
-# the inflexion point. When all possible shapes are relevant, we recommend c(0.0001, 10)
-# as bounds for shape; when only strong lagged effect is of interest, we recommend
-# c(2.0001, 10) as bound for shape. In all cases, we recommend conservative bound of
-# c(0, 0.1) for scale. Due to the great flexibility of Weibull PDF, meaning more freedom
-# in hyperparameter spaces for Nevergrad to explore, it also requires larger iterations
-# to converge.
-
-###??? Hill function for saturation: Hill function is a two-parametric function in Robyn with
-# alpha and gamma. Alpha controls the shape of the curve between exponential and s-shape.
-# Recommended bound is c(0.5, 3). The larger the alpha, the more S-shape. The smaller, the
-# more C-shape. Gamma controls the inflexion point. Recommended bounce is c(0.3, 1). The
-# larger the gamma, the later the inflection point in the response curve.
-
-## 4. Set individual hyperparameter bounds. They either contain two values e.g. c(0, 0.5),
-# or only one value, in which case you'd "fix" that hyperparameter.
 
 hyperparameters <- list(
   beef_alphas = c(0.5, 3)
@@ -160,18 +104,13 @@ hyperparameters <- list(
   , radio_S_alphas = c(0.5, 3)
   , radio_S_gammas = c(0.3, 1)
   , radio_S_scales = c(0, 0.1)
-  , radio_S_shapes = c(2.0001, 10)
-)
+  , radio_S_shapes = c(2.0001, 10))
 
 #### 2a-3: Third, add hyperparameters into robyn_inputs()
-
 InputCollect <- robyn_inputs(InputCollect = InputCollect, hyperparameters = hyperparameters)
 print(InputCollect)
-
 #### 2a-4: Fourth (optional), model calibration / add experimental input
-
 ## Guide for calibration source
-
 # 1. We strongly recommend to use experimental and causal results that are considered
 # ground truth to calibrate MMM. Usual experiment types are people-based (e.g. Facebook
 # conversion lift) and geo-based (e.g. Facebook GeoLift).
@@ -182,53 +121,27 @@ print(InputCollect)
 # channel A usually has $100K weekly spend and the experimental holdout is 70%, input
 # the point-estimate for the $30K, not the $70K.
 
-## -------------------------------- NOTE v3.6.4 CHANGE !!! ---------------------------------- ##
-## Calibration channels need to be paid_media_spends or organic_vars name.
-## ------------------------------------------------------------------------------------------ ##
 calibration_input <- data.frame(
   # channel name must in paid_media_vars
-  channel = c("Influencer_S", "Social_Media_S", "Radio_S"),
+  channel = c('bloggers_S', "coupon_S", "display_S", "radio_S", "chicken", "beef"),
   # liftStartDate must be within input data range
-  liftStartDate = as.Date(c("2019-12-08", "2019-12-08", "2019-12-08")),
+  liftStartDate = as.Date(c("2019-12-08", "2019-12-08", "2019-12-08", "2019-12-08",
+                                   "2019-12-08", "2019-12-08")),
   # liftEndDate must be within input data range
-  liftEndDate = as.Date(c("2021-04-17", "2021-04-17", "2021-04-17")),
-  # Provided value must be tested on same campaign level in model and same metric as dep_var_type
-  liftAbs = c(400000, 300000, 200000),
-  # Spend within experiment: should match within a 10% error your spend on date range for each channel from dt_input
-  spend = c(357200000, 25810000, 188000000),
+  liftEndDate = as.Date(c("2021-04-17", "2021-04-17", "2021-04-17", "2021-04-17",
+                                     "2021-04-17",   "2021-04-17" )),
+  # Provided value must be on same campaign level in model, same metric as
+  # dep_var_type
+  liftAbs = c(400000, 300000, 200000, 100000, 100000, 100000),
+  # Spend within experiment: should match within a 10% error your spend on date range
+  # for each channel from dt_input
+  spend = c(90990000, 104400000, 705300000, 567600000, 100000000, 100000000),
   # Confidence: if frequentist experiment, you may use 1 - pvalue
-  confidence = c(0.85, 0.8, 0.99),
+  confidence = c(0.85, .83, 0.8, 0.99, .9, .9),
   # KPI measured: must match your dep_var
-  metric = c("revenue", "revenue", "revenue")
-)
-InputCollect <- robyn_inputs(InputCollect = InputCollect, calibration_input = calibration_input)
-
-
-################################################################
-#### Step 2b: For known model specification, setup in one single step
-
-## Specify hyperparameters as in 2a-2 and optionally calibration as in 2a-4 and provide them directly in robyn_inputs()
-###? Note that any hyperparameters changed above need to be used here
-
-# InputCollect <- robyn_inputs(
-#   dt_input = df
-#   , dt_holidays = dt_prophet_holidays
-#   , date_var = "DATE"
-#   , dep_var = "revenue"
-#   , dep_var_type = "revenue"
-#   , prophet_vars = c("trend", "season", "holiday")
-#   , prophet_country = "US"
-#   , context_vars = c("competitor_sales_B", "events")
-#   , paid_media_spends = c("disp_S", "event_S", "email_S", "sm_S", "influence_S")
-#   , paid_media_vars = c("disp_S", "event_S", "email_S", "app_S", "banner_S")
-#   , organic_vars = c("circular_S")
-#   , factor_vars = c("events")
-#   , window_start = "2019-12-08"
-#   , window_end = "2022-04-17"
-#   , adstock = "weibull_pdf"
-#   , hyperparameters = hyperparameters # as in 2a-2 above
-#   , calibration_input = calibration_input # as in 2a-4 above
-# )
+  metric = c("revenue", "revenue", "revenue", "revenue", "revenue", "revenue"))
+InputCollect <- robyn_inputs(InputCollect = InputCollect,
+                             calibration_input = calibration_input)
 
 ################################################################
 #### Step 3: Build initial model
@@ -236,11 +149,10 @@ InputCollect <- robyn_inputs(InputCollect = InputCollect, calibration_input = ca
 ## Run all trials and iterations. Use ?robyn_run to check parameter definition
 OutputModels <- robyn_run(
   InputCollect = InputCollect # feed in all model specification
-  # , seed = 42
   , cores = 16 # default ??? Test tese functions
   #, add_penalty_factor = FALSE # Untested feature. Use with caution.
-  , iterations = 1000 # try to increase to converge faster
-  , trials = 5 # try to increase to converge faster
+  , iterations = 2000 # try to increase to converge faster
+  , trials = 10 # try to increase to converge faster
   , outputs = FALSE # outputs = FALSE disables direct model output
 )
 print(OutputModels)
@@ -248,13 +160,12 @@ print(OutputModels)
 ## Check MOO (multi-objective optimization) convergence plots
 OutputModels$convergence$moo_distrb_plot
 OutputModels$convergence$moo_cloud_plot
-# check convergence rules ?robyn_converge
 
 ## Calculate Pareto optimality, cluster and export results and plots. See ?robyn_outputs
 OutputCollect <- robyn_outputs(
   InputCollect, OutputModels
   , pareto_fronts = 1
-  , calibration_constraint =.1 #& default at 0.1
+  , calibration_constraint = .1 #& default at 0.1
   , csv_out = "pareto" # "pareto" or "all"
   , clusters = TRUE # Set to TRUE to cluster similar models by ROAS. See ?robyn_clusters
   , plot_pareto = TRUE # Set to FALSE to deactivate plotting and saving model one-pagers
@@ -262,20 +173,6 @@ OutputCollect <- robyn_outputs(
 )
 print(OutputCollect)
 
-# # Run & output in one go
-# OutputCollect <- robyn_run(
-#   InputCollect = InputCollect
-#   , cores = NULL
-#   , iterations = 300
-#   , trials = 3
-#   , add_penalty_factor = TRUE # Test this functionality
-#   , outputs = TRUE
-#   , pareto_fronts = 3
-#   , csv_out = "pareto"
-#   , clusters = TRUE
-#   , plot_pareto = TRUE
-#   , plot_folder = robyn_object
-# )
 convergence <- robyn_converge(OutputModels)
 convergence$moo_distrb_plot
 convergence$moo_cloud_plot
@@ -284,7 +181,7 @@ print(OutputCollect)
 ##??? 4 csv files are exported into the folder for further usage. Check schema here:
 ## https://github.com/facebookexperimental/Robyn/blob/main/demo/schema.R
 # pareto_hyperparameters.csv, hyperparameters per Pareto output model
-# pareto_aggregated.csv, aggregated decomposition per independent variable of all Pareto output
+# pareto_aggregated.csv, agg decomposition per independent variable of Pareto output
 # pareto_media_transform_matrix.csv, all media transformation vectors
 # pareto_alldecomp_matrix.csv, all decomposition vectors of independent variables
 
@@ -292,14 +189,13 @@ print(OutputCollect)
 #### Step 4: Select and save the initial model
 ## Compare all model one-pagers and select one that mostly reflects your business reality
 print(OutputCollect)
-yes
 
 ################################################################
-#### Step 5: Get budget allocation based on the selected model above
-
-## Budget allocation result requires further validation. Please use this recommendation with caution.
-## Don't interpret budget allocation result if selected model above doesn't meet business expectation.
-###??? Look at any and all suggestions to see if the recomendations make sense;
+## Step 5: Get budget allocation based on the selected model above
+# Budget allocation result requires further validation. Please use this recommendation
+# with caution.  Don't interpret budget allocation result if selected model above
+# doesn't meet business expectation.
+# Look at any and all suggestions to see if the recomendations make sense;
 # On occasions, they suggest dropping spend on the holidays and even no ad spend
 # Check media summary for selected model
 print(ExportedModel)
@@ -500,3 +396,45 @@ response_sending$plot
 #            , select_model = select_model
 #            , InputCollect = InputCollect
 #            , OutputCollect = OutputCollectFixed)
+
+###############################################################################################
+# Glossary
+## 3. Hyperparameter interpretation & recommendation:
+
+## Geometric adstock: Theta is the only parameter and means fixed decay rate. Assuming TV
+## spend on day 1 is 100€ and theta = 0.7, then day 2 has 100*0.7=70€ worth of effect
+## carried-over from day 1, day 3 has 70*0.7=49€ from day 2 etc. Rule-of-thumb for common
+## media genre: TV c(0.3, 0.8), OOH/Print/Radio c(0.1, 0.4), digital c(0, 0.3)
+
+# Weibull CDF adstock: The Cumulative Distribution Function of Weibull has two parameters
+# , shape & scale, and has flexible decay rate, compared to Geometric adstock with fixed
+# decay rate. The shape parameter controls the shape of the decay curve. Recommended
+# bound is c(0.0001, 2). The larger the shape, the more S-shape. The smaller, the more
+# L-shape. Scale controls the inflexion point of the decay curve. We recommend very
+# conservative bounce of c(0, 0.1), because scale increases the adstock half-life greatly.
+
+# Weibull PDF adstock: The Probability Density Function of the Weibull also has two
+# parameters, shape & scale, and also has flexible decay rate as Weibull CDF. The
+# difference is that Weibull PDF offers lagged effect. When shape > 2, the curve peaks
+# after x = 0 and has NULL slope at x = 0, enabling lagged effect and sharper increase and
+# decrease of adstock, while the scale parameter indicates the limit of the relative
+# position of the peak at x axis; when 1 < shape < 2, the curve peaks after x = 0 and has
+# infinite positive slope at x=0, enabling lagged effect and slower increase and decrease
+# of adstock, while scale has the same effect as above; when shape = 1, the curve peaks at
+# x = 0 and reduces to exponential decay, while scale controls the inflexion point; when
+# 0 < shape < 1, the curve peaks at x = 0 and has increasing decay, while scale controls
+# the inflexion point. When all possible shapes are relevant, we recommend c(0.0001, 10)
+# as bounds for shape; when only strong lagged effect is of interest, we recommend
+# c(2.0001, 10) as bound for shape. In all cases, we recommend conservative bound of
+# c(0, 0.1) for scale. Due to the great flexibility of Weibull PDF, meaning more freedom
+# in hyperparameter spaces for Nevergrad to explore, it also requires larger iterations
+# to converge.
+
+# Hill function for saturation: Hill function is a two-parametric function in Robyn with
+# alpha and gamma. Alpha controls the shape of the curve between exponential and s-shape.
+# Recommended bound is c(0.5, 3). The larger the alpha, the more S-shape. The smaller, the
+# more C-shape. Gamma controls the inflexion point. Recommended bounce is c(0.3, 1). The
+# larger the gamma, the later the inflection point in the response curve.
+
+## 4. Set individual hyperparameter bounds. They either contain two values e.g. c(0, 0.5),
+# or only one value, in which case you'd "fix" that hyperparameter.
