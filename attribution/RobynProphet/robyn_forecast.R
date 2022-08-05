@@ -18,7 +18,7 @@ conda_install("r-reticulate", "nevergrad", pip = TRUE)
 use_condaenv("r-reticulate")
 ################################################################
 #### Step 1: Load data
-setwd('G:/My Drive/IN/Data/Robyn')
+setwd('/home/matt/Documents/IN/Robyn')
 Sys.setenv(R_FUTURE_FORK_ENABLE = TRUE) # Force multicore when using RStudio
 options(future.fork.enable = TRUE)
 df <- read.csv('tyson_robyn_mean.csv', fileEncoding = 'UTF-8-BOM')
@@ -26,7 +26,7 @@ df <- read.csv('tyson_robyn_mean.csv', fileEncoding = 'UTF-8-BOM')
 data("dt_prophet_holidays")
 head(dt_prophet_holidays)
 # Set robyn_object. Ideally should not be moved
-robyn_object <- "C:/Users/norri/Music/MyRobyn.RDS"
+robyn_object <- "/home/matt/Documents/IN/Robyn/MyRobyn.RDS"
 ################################################################
 ### Step 1.5: Data Planning
 # names(df)[names(df) == "Date"] <- "DATE"
@@ -150,8 +150,8 @@ OutputModels <- robyn_run(
   InputCollect = InputCollect # feed in all model specification
   , cores = 16 # default ??? Test tese functions
   #, add_penalty_factor = FALSE # Untested feature. Use with caution.
-  , iterations = 2000 # try to increase to converge faster
-  , trials = 10 # try to increase to converge faster
+  , iterations = 3000 # try to increase to converge faster
+  , trials = 15 # try to increase to converge faster
   , outputs = FALSE # outputs = FALSE disables direct model output
 )
 print(OutputModels)
@@ -183,12 +183,19 @@ print(OutputCollect)
 # pareto_aggregated.csv, agg decomposition per independent variable of Pareto output
 # pareto_media_transform_matrix.csv, all media transformation vectors
 # pareto_alldecomp_matrix.csv, all decomposition vectors of independent variables
-
 ################################################################
 #### Step 4: Select and save the initial model
 ## Compare all model one-pagers and select one that mostly reflects your business reality
 print(OutputCollect)
-
+select_model <- "7_124_11" # select one from above
+ExportedModel <- robyn_save(
+  robyn_object = robyn_object, # model object location and name
+  select_model = select_model, # selected model ID
+  InputCollect = InputCollect,
+  OutputCollect = OutputCollect
+)
+print(ExportedModel)
+plot(ExportedModel)
 ################################################################
 ## Step 5: Get budget allocation based on the selected model above
 # Budget allocation result requires further validation. Please use this recommendation
@@ -198,7 +205,6 @@ print(OutputCollect)
 # On occasions, they suggest dropping spend on the holidays and even no ad spend
 # Check media summary for selected model
 print(ExportedModel)
-
 # Run ?robyn_allocator to check parameter definition
 # Run the "max_historical_response" scenario: "What's the revenue lift potential with the
 # same historical spend level and what is the spend mix?"
@@ -208,10 +214,10 @@ AllocatorCollect1 <- robyn_allocator(
   , select_model = select_model
   , scenario = "max_historical_response"
   , channel_constr_low = 0.7
-  , channel_constr_up = c(1.2, 1.5, 1.5)
+  , channel_constr_up = c(1.2)
   , export = TRUE
   , date_min = "2019-12-08"
-  , date_max = "2022-04-17"
+  , date_max = "2021-05-03"
 )
 print(AllocatorCollect1)
 plot(AllocatorCollect1)
@@ -225,7 +231,7 @@ AllocatorCollect2 <- robyn_allocator(
   , select_model = select_model
   , scenario = "max_response_expected_spend"
   , channel_constr_low = c(0.7)
-  , channel_constr_up = c(1.5, 1.5, 1.5)
+  , channel_constr_up = c(1.5)
   , expected_spend = 1000000 # Total spend to be simulated
   , expected_spend_days = 7 # Duration of expected_spend in days
   , export = TRUE
@@ -239,11 +245,11 @@ plot(AllocatorCollect2)
 
 ## QA optimal response
 # Pick any media variable: InputCollect$all_media
-select_media <- "Influencer_I"
+select_media <- "coupon_S"
 # For paid_media_spends set metric_value as your optimal spend
 metric_value <- AllocatorCollect1$dt_optimOut[channels == select_media, optmSpendUnit]
 # # For paid_media_vars and organic_vars, manually pick a value
-metric_value <- 10000
+# metric_value <- 10000
 
 if (TRUE) {
   optimal_response_allocator <- AllocatorCollect1$dt_optimOut[
@@ -339,7 +345,7 @@ Spend1 <- 60000
 Response1 <- robyn_response(
   robyn_object = robyn_object
   #, select_build = 1 # 2 means the second refresh model. 0 means the initial model
-  , media_metric = "influence_S"
+  , media_metric = "display_S"
   , metric_value = Spend1)
 Response1$response / Spend1 # ROI for search 80k
 Response1$plot
