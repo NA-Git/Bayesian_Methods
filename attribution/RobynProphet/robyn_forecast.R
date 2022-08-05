@@ -62,7 +62,7 @@ print(InputCollect)
 
 #### 2a-2: Second, define and add hyperparameters
 ## hyperparameter names needs to be base on paid_media_spends names. Run:
-hyper_names(adstock = InputCollect$adstock, all_media =InputCollect$all_media)
+hyper_names(adstock = InputCollect$adstock, all_media = InputCollect$all_media)
 plot_adstock(plot = TRUE)
 plot_saturation(plot = TRUE)
 hyper_limits()
@@ -77,8 +77,6 @@ hyper_limits()
 # 2. Get correct hyperparameter names:
 # All variables in paid_media_spends and organic_vars require hyperparameter and will be
 # transformed by adstock & saturation.
-
-
 
 hyperparameters <- list(
   beef_alphas = c(0.5, 3)
@@ -107,7 +105,8 @@ hyperparameters <- list(
   , radio_S_shapes = c(2.0001, 10))
 
 #### 2a-3: Third, add hyperparameters into robyn_inputs()
-InputCollect <- robyn_inputs(InputCollect = InputCollect, hyperparameters = hyperparameters)
+InputCollect <- robyn_inputs(InputCollect = InputCollect,
+                             hyperparameters = hyperparameters)
 print(InputCollect)
 #### 2a-4: Fourth (optional), model calibration / add experimental input
 ## Guide for calibration source
@@ -126,10 +125,10 @@ calibration_input <- data.frame(
   channel = c('bloggers_S', "coupon_S", "display_S", "radio_S", "chicken", "beef"),
   # liftStartDate must be within input data range
   liftStartDate = as.Date(c("2019-12-08", "2019-12-08", "2019-12-08", "2019-12-08",
-                                   "2019-12-08", "2019-12-08")),
+                            "2019-12-08", "2019-12-08")),
   # liftEndDate must be within input data range
   liftEndDate = as.Date(c("2021-04-17", "2021-04-17", "2021-04-17", "2021-04-17",
-                                     "2021-04-17",   "2021-04-17" )),
+                          "2021-04-17", "2021-04-17")),
   # Provided value must be on same campaign level in model, same metric as
   # dep_var_type
   liftAbs = c(400000, 300000, 200000, 100000, 100000, 100000),
@@ -218,7 +217,7 @@ print(AllocatorCollect1)
 plot(AllocatorCollect1)
 
 # Run the "max_response_expected_spend" scenario: "What's the maximum response for a given
-# total spend based on historical saturation and what is the spend mix?" "optmSpendShareUnit"
+# total spend based on historical saturation andthe spend mix?" "optmSpendShareUnit"
 # is the optimum spend share.
 AllocatorCollect2 <- robyn_allocator(
   InputCollect = InputCollect
@@ -265,10 +264,10 @@ if (TRUE) {
 ################################################################
 #### Step 6: Model refresh based on selected model and saved Robyn.RDS object - Alpha
 
-## NOTE: must run robyn_save to select and save an initial model first, before refreshing below
+## NOTE: must run robyn_save to select and save an  model first, before refreshing below
 ## The robyn_refresh() function is suitable for updating within "reasonable periods"
 ## Two situations are considered better to rebuild model:
-## 1, most data is new. If initial model has 100 weeks and 80 weeks new data is added in refresh,
+## 1, most data is new. If  model has 100 weeks and 80 weeks new data is added in refresh,
 ## it might be better to rebuild the model
 ## 2, new variables are added
 
@@ -293,7 +292,8 @@ Robyn <- robyn_refresh(
 
 # Export this refreshed model you wish to export
 last_refresh_num <- sum(grepl('listRefresh', names(Robyn))) + 1 # Pick any refresh.
-# Here's the final refresh using the model recommended by least combined normalized nrmse and decomp.rssd
+# Here's the final refresh using the model recommended by least combined normalized nrmse
+# and decomp.rssd
 ExportedRefreshModel <- robyn_save(
   robyn_object = robyn_object
   , select_model = Robyn[[last_refresh_num]]$OutputCollect$selectID
@@ -322,17 +322,17 @@ plot(AllocatorCollect)
 
 ###??? Can take hours to run
 
-## Example of how to get marginal ROI of next 1000$ from the 80k spend level for search channel
+## how to get marginal ROI of next 1000$ from the 80k spend level for search channel
 
 # Run ?robyn_response to check parameter definition
 
-## -------------------------------- NOTE v3.6.0 CHANGE !!! ---------------------------------- ##
-## The robyn_response() function can now output response for both spends and exposures (imps,
+## -------------------------------- NOTE v3.6.0 CHANGE !!! --------------------------- ##
+## The robyn_response() function can now output response for spends and exposures (imps,
 ## GRP, circular_S sendings etc.) as well as plotting individual saturation curves. New
-## argument names "media_metric" and "metric_value" instead of "paid_media_var" and "spend"
+## argument names "media_metric" and "metric_value" instead "paid_media_var" and "spend"
 ## are now used to accommodate this change. Also the returned output is a list now and
 ## contains also the plot.
-## ------------------------------------------------------------------------------------------ ##
+## ------------------------------------------------------------------------------------##
 
 # Get response for 80k from result saved in robyn_object
 Spend1 <- 60000
@@ -381,23 +381,24 @@ response_sending$plot
 #### Optional: get old model results
 
 # Get old hyperparameters and select model
-# dt_hyper_fixed <- data.table::fread("~/Desktop/2022-03-31 12.32 rf4/pareto_hyperparameters.csv")
+# dt_hyper_fixed <-
+# data.table::fread("~/Desktop/2022-03-31 12.32 rf4/pareto_hyperparameters.csv")
 # select_model <- "1_25_9"
 # dt_hyper_fixed <- dt_hyper_fixed[solID == select_model]
 
 # OutputCollectFixed <- robyn_run(
-#   # InputCollect must be provided by robyn_inputs with same dataset and parameters as before
+# InputCollect must be provided by robyn_inputs with same data and parameters as before
 #   InputCollect = InputCollect
 #   , plot_folder = robyn_object
 #   , dt_hyper_fixed = dt_hyper_fixed)
-# 
+#
 # # Save Robyn object for further refresh
 # robyn_save(robyn_object = robyn_object
 #            , select_model = select_model
 #            , InputCollect = InputCollect
 #            , OutputCollect = OutputCollectFixed)
 
-###############################################################################################
+########################################################################################
 # Glossary
 ## 3. Hyperparameter interpretation & recommendation:
 
