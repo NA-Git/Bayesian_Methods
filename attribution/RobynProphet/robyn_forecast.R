@@ -48,7 +48,7 @@ InputCollect <- robyn_inputs(
   # paid_media_vars are mandatory like paid_media_spends, and must have same order as
   # paid_media_spends. Use media exposure metrics like impressions,
   # GRP etc. If not applicable, use spend instead.
-  , organic_vars = c('chicken', 'beef') # marketing activity without media spend
+  , organic_vars = c('chicken') # marketing activity without media spend
   # ,factor_vars = ("incidents") # specify which variables in context_vars or
   # organic_vars are factorial
   # prophet pulls in your date range from the date variable, but the window start
@@ -79,11 +79,11 @@ hyper_limits()
 # transformed by adstock & saturation.
 
 hyperparameters <- list(
-  beef_alphas = c(0.5, 3)
-  , beef_gammas = c(0.3, 1)
-  , beef_scales = c(0, 0.1)
-  , beef_shapes = c(2.0001, 10)
-  , bloggers_S_alphas = c(0.5, 3)
+  # beef_alphas = c(0.5, 3)
+  # , beef_gammas = c(0.3, 1)
+  # , beef_scales = c(0, 0.1)
+  # , beef_shapes = c(2.0001, 10)
+   bloggers_S_alphas = c(0.5, 3)
   , bloggers_S_gammas = c(0.3, 1)
   , bloggers_S_scales = c(0, 0.1)
   , bloggers_S_shapes = c(2.0001, 10)
@@ -120,27 +120,27 @@ print(InputCollect)
 # channel A usually has $100K weekly spend and the experimental holdout is 70%, input
 # the point-estimate for the $30K, not the $70K.
 
-calibration_input <- data.frame(
-  # channel name must in paid_media_vars
-  channel = c('bloggers_S', "coupon_S", "display_S", "radio_S", "chicken", "beef"),
-  # liftStartDate must be within input data range
-  liftStartDate = as.Date(c("2019-12-08", "2019-12-08", "2019-12-08", "2019-12-08",
-                            "2019-12-08", "2019-12-08")),
-  # liftEndDate must be within input data range
-  liftEndDate = as.Date(c("2021-04-17", "2021-04-17", "2021-04-17", "2021-04-17",
-                          "2021-04-17", "2021-04-17")),
-  # Provided value must be on same campaign level in model, same metric as
-  # dep_var_type
-  liftAbs = c(400000, 300000, 200000, 100000, 100000, 100000),
-  # Spend within experiment: should match within a 10% error your spend on date range
-  # for each channel from dt_input
-  spend = c(90990000, 104400000, 705300000, 567600000, 100000000, 100000000),
-  # Confidence: if frequentist experiment, you may use 1 - pvalue
-  confidence = c(0.85, .83, 0.8, 0.99, .9, .9),
-  # KPI measured: must match your dep_var
-  metric = c("revenue", "revenue", "revenue", "revenue", "revenue", "revenue"))
-InputCollect <- robyn_inputs(InputCollect = InputCollect,
-                             calibration_input = calibration_input)
+# calibration_input <- data.frame(
+#   # channel name must in paid_media_vars
+#   channel = c('bloggers_S', "coupon_S", "display_S", "radio_S", "chicken", "beef"),
+#   # liftStartDate must be within input data range
+#   liftStartDate = as.Date(c("2019-12-08", "2019-12-08", "2019-12-08", "2019-12-08",
+#                             "2019-12-08", "2019-12-08")),
+#   # liftEndDate must be within input data range
+#   liftEndDate = as.Date(c("2021-04-17", "2021-04-17", "2021-04-17", "2021-04-17",
+#                           "2021-04-17", "2021-04-17")),
+#   # Provided value must be on same campaign level in model, same metric as
+#   # dep_var_type
+#   liftAbs = c(400000, 300000, 200000, 100000, 100000, 100000),
+#   # Spend within experiment: should match within a 10% error your spend on date range
+#   # for each channel from dt_input
+#   spend = c(90990000, 104400000, 705300000, 567600000, 100000000, 100000000),
+#   # Confidence: if frequentist experiment, you may use 1 - pvalue
+#   confidence = c(0.85, .83, 0.8, 0.99, .9, .9),
+#   # KPI measured: must match your dep_var
+#   metric = c("revenue", "revenue", "revenue", "revenue", "revenue", "revenue"))
+# InputCollect <- robyn_inputs(InputCollect = InputCollect,
+#                              calibration_input = calibration_input)
 
 ################################################################
 #### Step 3: Build initial model
@@ -150,8 +150,8 @@ OutputModels <- robyn_run(
   InputCollect = InputCollect # feed in all model specification
   , cores = 16 # default ??? Test tese functions
   #, add_penalty_factor = FALSE # Untested feature. Use with caution.
-  , iterations = 3000 # try to increase to converge faster
-  , trials = 15 # try to increase to converge faster
+  , iterations = 2500 # try to increase to converge faster
+  , trials = 6 # try to increase to converge faster
   , outputs = FALSE # outputs = FALSE disables direct model output
 )
 print(OutputModels)
@@ -187,7 +187,7 @@ print(OutputCollect)
 #### Step 4: Select and save the initial model
 ## Compare all model one-pagers and select one that mostly reflects your business reality
 print(OutputCollect)
-select_model <- "7_124_11" # select one from above
+select_model <- "2_136_5" # select one from above
 ExportedModel <- robyn_save(
   robyn_object = robyn_object, # model object location and name
   select_model = select_model, # selected model ID
