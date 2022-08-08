@@ -136,7 +136,7 @@ calibration_input <- data.frame(
   # for each channel from dt_input
   spend = c(90990000, 104400000, 705300000, 567600000, 100000000, 100000000),
   # Confidence: if frequentist experiment, you may use 1 - pvalue
-  confidence = c(0.85, .83, 0.8, 0.99, .9, .9),
+  confidence = c(0.9, .9, 0.9, 0.9, .9, .9),
   # KPI measured: must match your dep_var
   metric = c("revenue", "revenue", "revenue", "revenue", "revenue", "revenue"))
 InputCollect <- robyn_inputs(InputCollect = InputCollect,
