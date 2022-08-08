@@ -5,7 +5,7 @@ OPTIONS(model_type='ARIMA_PLUS',
     data_frequency='WEEKLY',
     holiday_region='US' ) AS
 SELECT
-  sum(sales) as sales,
+  avg(sales) as sales,
   week
 FROM
    projectmercuryv1.bq_dev_db.kind_ml 
