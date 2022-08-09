@@ -1,192 +1,447 @@
-################## Dataset Construction ################
-### This data was created from the Amazon Kind & Nature's Path
-### It was selected down to either just kind or just NP,
-### Then the date column was renamed to 'ds' and the sales column to 'y'
+################################################################
+#### Step 0: Setup environment
+# It's best to install and load in this order, it has yet to fail
+install.packages("reticulate") # Install reticulate first if you haven't already
+remotes::install_github("facebookexperimental/Robyn/R")
+install.packages(c('nloptr', 'lares', 'dplyr', 'h2o', 'reticulate', 'tidyr'))
+library(Robyn)
+library(npreg)
+library(dplyr)
+library(nloptr)
+library(lares)
+library(tidyr)
+library(reticulate)
+library(h2o)
+h2o.init()
+conda_create("r-reticulate")
+conda_install("r-reticulate", "nevergrad", pip = TRUE)
+use_condaenv("r-reticulate")
+################################################################
+#### Step 1: Load data
+setwd('G:/My Drive/IN/Data/Robyn')
+Sys.setenv(R_FUTURE_FORK_ENABLE = TRUE) # Force multicore when using RStudio
+options(future.fork.enable = TRUE)
+df <- read.csv('robyn_clean.csv', fileEncoding = 'UTF-8-BOM')
+# Check holidays from Prophet enables other seasonanility features
+data("dt_prophet_holidays")
+head(dt_prophet_holidays)
+# Set robyn_object. Ideally should not be moved
+robyn_object <- "G:/My Drive/IN/Data/Robyn/MyRobyn.RDS"
+################################################################
+### Step 1.5: Data Planning
+# names(df)[names(df) == "Date"] <- "DATE"
+# df$DATE <- as.POSIXlt(df$DATE, "%Y-%m-%d", tz = "UTC", origin = "2019-09-30")
+################################################################
+#### Step 2a: For first time user: Model specification in 4 steps
+#### 2a-1: First, specify input variables
+InputCollect <- robyn_inputs(
+  dt_input = df
+  , dt_holidays = dt_prophet_holidays
+  , date_var = "DATE" # date format must be "2020-01-01"
+  , dep_var = "revenue" # there should be only one dependent variable
+  , dep_var_type = "revenue" # "revenue" (ROI) or "conversion" (CPA)
+  , prophet_vars = c("trend", "season", "holiday") # "trend","season", "holiday"
+  , prophet_country = "US" # input one country of dt_prophet_holidays
+  , context_vars = c("cag_V") # e.g. competitors, discount, unemployment etc
+  , paid_media_spends = c("bloggers_S", "coupon_S", "display_S", 'radio_S')
+  , paid_media_vars = c("bloggers_I", "coupon_I", "display_I", 'radio_I')
+  # paid_media_vars are mandatory like paid_media_spends, and must have same order as
+  # paid_media_spends. Use media exposure metrics like impressions,
+  # GRP etc. If not applicable, use spend instead.
+  , organic_vars = c('chicken', 'beef') # marketing activity without media spend
+  # ,factor_vars = ("incidents") # specify which variables in context_vars or
+  # organic_vars are factorial
+  # prophet pulls in your date range from the date variable, but the window start
+  # and window end require you to put in dates that are in between and smaller
+  # than your total dates
+  , window_start = "2019-10-21"
+  , window_end = "2021-05-02"
+  , adstock = "weibull_pdf" # geometric, weibull_cdf or weibull_pdf.
+)
+print(InputCollect)
 
-# install.packages('prophet')
-# install.packages('timeDate')
-# install.packages('dplyr')
-# install.packages('lubridate')
-install.packages('reshape2')
+#### 2a-2: Second, define and add hyperparameters
+## hyperparameter names needs to be base on paid_media_spends names. Run:
+hyper_names(adstock = InputCollect$adstock, all_media = InputCollect$all_media)
+plot_adstock(plot = TRUE)
+plot_saturation(plot = TRUE)
+hyper_limits()
+## to see correct hyperparameter names. Check GitHub homepage for background of change.
+## Also calibration_input are required to be spend names.
+## ----------------------------------------------------------------------------------- ##
+## Guide to setup & understand hyperparameters
 
-library('prophet')
-library('dplyr')
-library('lubridate')
-library('ggplot2')
-library('reshape2')
+## 1. IMPORTANT: set plot = TRUE to see helper plots of hyperparameter's
+# effect in transformation
+# Write function here to pass through all the info
+# 2. Get correct hyperparameter names:
+# All variables in paid_media_spends and organic_vars require hyperparameter and will be
+# transformed by adstock & saturation.
 
-# this file was preformatted to work with Prophet
-df <- read.csv('G:/My Drive/IN/Data/Prophet/np_prophet.csv')
+hyperparameters <- list(
+  beef_alphas = c(0.5, 3)
+  , beef_gammas = c(0.3, 1)
+  , beef_scales = c(0, 0.1)
+  , beef_shapes = c(2.0001, 10)
+  , bloggers_S_alphas = c(0.5, 3)
+  , bloggers_S_gammas = c(0.3, 1)
+  , bloggers_S_scales = c(0, 0.1)
+  , bloggers_S_shapes = c(2.0001, 10)
+  , chicken_alphas = c(0.5, 3)
+  , chicken_gammas = c(0.3, 1)
+  , chicken_scales = c(0, 0.1)
+  , chicken_shapes = c(2.0001, 10)
+  , coupon_S_alphas = c(0.5, 3)
+  , coupon_S_gammas = c(0.3, 1)
+  , coupon_S_scales = c(0, 0.1)
+  , coupon_S_shapes = c(2.0001, 10)
+  , display_S_alphas = c(0.5, 3)
+  , display_S_gammas = c(0.3, 1)
+  , display_S_scales = c(0, 0.1)
+  , display_S_shapes = c(2.0001, 10)
+  , radio_S_alphas = c(0.5, 3)
+  , radio_S_gammas = c(0.3, 1)
+  , radio_S_scales = c(0, 0.1)
+  , radio_S_shapes = c(2.0001, 10))
 
-# to run prophet, there needs to be only two columns: ds, which is 
-# formatted in YYYY-MM-DD format, and y, which is usually sales
-# for the model to be working correctly, date needs to be sorted in
-# descending order, then converted to POSIXct format. setting the
-# starting date, or origin, is absolutely necessary
-# all other columns can be dropped, nor need to be pivoted
+#### 2a-3: Third, add hyperparameters into robyn_inputs()
+InputCollect <- robyn_inputs(InputCollect = InputCollect,
+                             hyperparameters = hyperparameters)
+print(InputCollect)
+#### 2a-4: Fourth (optional), model calibration / add experimental input
+## Guide for calibration source
+# 1. We strongly recommend to use experimental and causal results that are considered
+# ground truth to calibrate MMM. Usual experiment types are people-based (e.g. Facebook
+# conversion lift) and geo-based (e.g. Facebook GeoLift).
+# 2. Currently, Robyn only accepts point-estimate as calibration input. For example, if
+# 10k$ spend is tested against a hold-out for channel A, then input the incremental
+# return as point-estimate as the example below.
+# 3. The point-estimate has to always match the spend in the variable. For example, if
+# channel A usually has $100K weekly spend and the experimental holdout is 70%, input
+# the point-estimate for the $30K, not the $70K.
 
-# I ordered the file in advance, but the conversion to POSIXct is crucial
-df <- df[order(df$ds),] # orders the df$ds column in ascending order
-df$ds <- as.POSIXct(df$ds,"%Y-%m-%d", tz = "UTC", origin="2018-06-03")
+calibration_input <- data.frame(
+  # channel name must in paid_media_vars
+  channel = c('bloggers_S', "coupon_S", "display_S", "radio_S", "chicken", "beef"),
+  # liftStartDate must be within input data range
+  liftStartDate = as.Date(c("2019-12-08", "2019-12-08", "2019-12-08", "2019-12-08",
+                            "2019-12-08", "2019-12-08")),
+  # liftEndDate must be within input data range
+  liftEndDate = as.Date(c("2021-04-17", "2021-04-17", "2021-04-17", "2021-04-17",
+                          "2021-04-17", "2021-04-17")),
+  # Provided value must be on same campaign level in model, same metric as
+  # dep_var_type
+  liftAbs = c(400000, 300000, 200000, 100000, 100000, 100000),
+  # Spend within experiment: should match within a 10% error your spend on date range
+  # for each channel from dt_input
+  spend = c(90990000, 104400000, 705300000, 567600000, 100000000, 100000000),
+  # Confidence: if frequentist experiment, you may use 1 - pvalue
+  confidence = c(0.9, .9, 0.9, 0.9, .9, .9),
+  # KPI measured: must match your dep_var
+  metric = c("revenue", "revenue", "revenue", "revenue", "revenue", "revenue"))
+InputCollect <- robyn_inputs(InputCollect = InputCollect,
+                             calibration_input = calibration_input)
 
-## I split up the files for testing, training, and holidays
-df <- subset(df, ds > '2020-02-28' & ds < '2022-05-22')
+################################################################
+#### Step 3: Build initial model
 
-df_train <- subset(df, ds > '2020-03-01' & ds < '2022-02-27')
+## Run all trials and iterations. Use ?robyn_run to check parameter definition
+OutputModels <- robyn_run(
+  InputCollect = InputCollect # feed in all model specification
+  , cores = 16 # default ??? Test tese functions
+  #, add_penalty_factor = FALSE # Untested feature. Use with caution.
+  , iterations = 2500 # try to increase to converge faster
+  , trials = 20 # try to increase to converge faster
+  , outputs = FALSE # outputs = FALSE disables direct model output
+)
+print(OutputModels)
 
-df_test <- subset(df, ds > '2022-02-28' & ds < '2022-05-22')
+## Check MOO (multi-objective optimization) convergence plots
+OutputModels$convergence$moo_distrb_plot
+OutputModels$convergence$moo_cloud_plot
 
-prophet_holidays <- read.csv("G:/My Drive/IN/DATA/Robyn/dt_prophet_holidays.csv")
-prophet_holidays <- prophet_holidays[prophet_holidays$country == 'US', ]
+## Calculate Pareto optimality, cluster and export results and plots. See ?robyn_outputs
+OutputCollect <- robyn_outputs(
+  InputCollect, OutputModels
+  , pareto_fronts = 1
+  , calibration_constraint = .1 #& default at 0.1
+  , csv_out = "pareto" # "pareto" or "all"
+  , clusters = TRUE # Set to TRUE to cluster similar models by ROAS. See ?robyn_clusters
+  , plot_pareto = TRUE # Set to FALSE to deactivate plotting and saving model one-pagers
+  , plot_folder = robyn_object # path for plots export
+)
+print(OutputCollect)
 
-# I've chosen to define most parameters in the Prophet
-# functions that is used in most of the remaining program
-# the most important arguments to set are growth, seasonality,
-# all function definitions are available 
-# here: https://cran.r-project.org/web/packages/prophet/prophet.pdf
+convergence <- robyn_converge(OutputModels)
+convergence$moo_distrb_plot
+convergence$moo_cloud_plot
+print(OutputCollect)
 
-m <- prophet(
-    df_train,
-    growth = "linear",
-    # changepoints = NULL,
-    # n.changepoints = 25,
-    changepoint.range = 0.8,
-    yearly.seasonality = TRUE, 
-    weekly.seasonality = TRUE, 
-    daily.seasonality = FALSE,
-    holidays = prophet_holidays,
-    seasonality.mode = "additive", 
-    seasonality.prior.scale = 10, 
-    holidays.prior.scale = 10, 
-    changepoint.prior.scale = .5,
-    mcmc.samples = 600, 
-    interval.width = .25, 
-    uncertainty.samples = 150,
-    fit = TRUE
+##??? 4 csv files are exported into the folder for further usage. Check schema here:
+## https://github.com/facebookexperimental/Robyn/blob/main/demo/schema.R
+# pareto_hyperparameters.csv, hyperparameters per Pareto output model
+# pareto_aggregated.csv, agg decomposition per independent variable of Pareto output
+# pareto_media_transform_matrix.csv, all media transformation vectors
+# pareto_alldecomp_matrix.csv, all decomposition vectors of independent variables
+################################################################
+#### Step 4: Select and save the initial model
+## Compare all model one-pagers and select one that mostly reflects your business reality
+print(OutputCollect)
+select_model <- "7_124_11" # select one from above
+ExportedModel <- robyn_save(
+  robyn_object = robyn_object, # model object location and name
+  select_model = select_model, # selected model ID
+  InputCollect = InputCollect,
+  OutputCollect = OutputCollect
+)
+print(ExportedModel)
+plot(ExportedModel)
+################################################################
+## Step 5: Get budget allocation based on the selected model above
+# Budget allocation result requires further validation. Please use this recommendation
+# with caution.  Don't interpret budget allocation result if selected model above
+# doesn't meet business expectation.
+# Look at any and all suggestions to see if the recomendations make sense;
+# On occasions, they suggest dropping spend on the holidays and even no ad spend
+# Check media summary for selected model
+print(ExportedModel)
+# Run ?robyn_allocator to check parameter definition
+# Run the "max_historical_response" scenario: "What's the revenue lift potential with the
+# same historical spend level and what is the spend mix?"
+AllocatorCollect1 <- robyn_allocator(
+  InputCollect = InputCollect
+  , OutputCollect = OutputCollect
+  , select_model = select_model
+  , scenario = "max_historical_response"
+  , channel_constr_low = 0.7
+  , channel_constr_up = c(1.2)
+  , export = TRUE
+  , date_min = "2019-12-08"
+  , date_max = "2021-05-03"
+)
+print(AllocatorCollect1)
+plot(AllocatorCollect1)
+
+# Run the "max_response_expected_spend" scenario: "What's the maximum response for a given
+# total spend based on historical saturation andthe spend mix?" "optmSpendShareUnit"
+# is the optimum spend share.
+AllocatorCollect2 <- robyn_allocator(
+  InputCollect = InputCollect
+  , OutputCollect = OutputCollect
+  , select_model = select_model
+  , scenario = "max_response_expected_spend"
+  , channel_constr_low = c(0.7)
+  , channel_constr_up = c(1.5)
+  , expected_spend = 1000000 # Total spend to be simulated
+  , expected_spend_days = 7 # Duration of expected_spend in days
+  , export = TRUE
+)
+print(AllocatorCollect2)
+AllocatorCollect2$dt_optimOut
+plot(AllocatorCollect2)
+
+## A csv is exported into the folder for further usage. Check schema here:
+## https://github.com/facebookexperimental/Robyn/blob/main/demo/schema.R
+
+## QA optimal response
+# Pick any media variable: InputCollect$all_media
+select_media <- "coupon_S"
+# For paid_media_spends set metric_value as your optimal spend
+metric_value <- AllocatorCollect1$dt_optimOut[channels == select_media, optmSpendUnit]
+# # For paid_media_vars and organic_vars, manually pick a value
+# metric_value <- 10000
+
+if (TRUE) {
+  optimal_response_allocator <- AllocatorCollect1$dt_optimOut[
+    channels == select_media, optmResponseUnit]
+  optimal_response <- robyn_response(
+    robyn_object = robyn_object,
+    select_build = 0,
+    media_metric = select_media,
+    metric_value = metric_value)
+  plot(optimal_response$plot)
+  if (length(optimal_response_allocator) > 0) {
+    cat("QA if results from robyn_allocator and robyn_response agree: ")
+    cat(round(optimal_response_allocator) == round(optimal_response$response), "( ")
+    cat(optimal_response$response, "==", optimal_response_allocator, ")\n")
+  }
+}
+
+################################################################
+#### Step 6: Model refresh based on selected model and saved Robyn.RDS object - Alpha
+
+## NOTE: must run robyn_save to select and save an  model first, before refreshing below
+## The robyn_refresh() function is suitable for updating within "reasonable periods"
+## Two situations are considered better to rebuild model:
+## 1, most data is new. If  model has 100 weeks and 80 weeks new data is added in refresh,
+## it might be better to rebuild the model
+## 2, new variables are added
+
+# Run ?robyn_refresh to check parameter definition
+Robyn <- robyn_refresh(
+  robyn_object = robyn_object
+  , dt_input = df
+  , dt_holidays = dt_prophet_holidays
+  , refresh_steps = 4
+  , refresh_mode = "manual"
+  , refresh_iters = 1000 # 1k is estimation. Use refresh_mode = "manual" to try out.
+  , refresh_trials = 3
+  , plot_pareto = TRUE
+  , clusters = FALSE
 )
 
-# # The following process creates a dataframe for a 
-# # forecast to be added to
-# # note that both number of periods and length of
-# # intervals can be see and should be consistent throughout
+## Besides plots: there're 4 csv output saved in the folder for further usage
+# report_hyperparameters.csv, hyperparameters of all selected model for reporting
+# report_aggregated.csv, aggregated decomposition per independent variable
+# report_media_transform_matrix.csv, all media transformation vectors
+# report_alldecomp_matrix.csv,all decomposition vectors of independent variables
 
-future <- make_future_dataframe(m, periods = 12, freq = 'week')
-forecast <- predict(m, future)
+# Export this refreshed model you wish to export
+last_refresh_num <- sum(grepl('listRefresh', names(Robyn))) + 1 # Pick any refresh.
+# Here's the final refresh using the model recommended by least combined normalized nrmse
+# and decomp.rssd
+ExportedRefreshModel <- robyn_save(
+  robyn_object = robyn_object
+  , select_model = Robyn[[last_refresh_num]]$OutputCollect$selectID
+  , InputCollect = Robyn[[last_refresh_num]]$InputCollect
+  , OutputCollect = Robyn[[last_refresh_num]]$OutputCollect
+)
 
-fcst <- predict(m, future)
-plot(m, fcst)
+################################################################
+#### Step 7: Get budget allocation recommendation based on selected refresh runs
 
-# plots trend, holidays, seasonality, if those are included
-prophet_plot_components(m, forecast)
+# Run ?robyn_allocator to check parameter definition
+AllocatorCollect <- robyn_allocator(
+  robyn_object = robyn_object
+  #, select_build = 1 # Use third refresh model
+  , scenario = "max_response_expected_spend"
+  , channel_constr_low = c(0.7, 0.7, 0.7, 0.7, 0.7)
+  , channel_constr_up = c(1.2, 1.5, 1.5, 1.5, 1.5)
+  , expected_spend = 2000000 # Total spend to be simulated
+  , expected_spend_days = 14 # Duration of expected_spend in days
+)
+print(AllocatorCollect)
+plot(AllocatorCollect)
 
-# this plots the third argument from FCST, in this case 'trend'
-plot_forecast_component(m, fcst, 'trend', uncertainty = TRUE, 
-                        plot_cap = FALSE)
+################################################################
+#### Step 8: get marginal returns
 
-# a ggplot that provides the forecast, actual value,
-# and a slider to see the forecast and actual values
-dyplot.prophet(m, fcst, uncertainty = TRUE)
+###??? Can take hours to run
 
-# creates lines to overlay significant changes in the forecast plot
-plot(m, fcst) + add_changepoints_to_plot(m)
+## how to get marginal ROI of next 1000$ from the 80k spend level for search channel
 
-# the following functions cross-validate
-# and provide the RMSE stat, among others
-cv <-cross_validation(m, 7, 'weeks', period = 12, initial = NULL, 
-                      cutoffs = NULL)
+# Run ?robyn_response to check parameter definition
 
-# this plots a performance metric, in this case RMSE, over the forecast horizon
-plot_cross_validation_metric(cv, metric = 'rmse', rolling_window = .1)
-plot_cross_validation_metric(cv, metric = 'mape', rolling_window = .1)
-plot_cross_validation_metric(cv, metric = 'smape', rolling_window = .1)
+## -------------------------------- NOTE v3.6.0 CHANGE !!! --------------------------- ##
+## The robyn_response() function can now output response for spends and exposures (imps,
+## GRP, circular_S sendings etc.) as well as plotting individual saturation curves. New
+## argument names "media_metric" and "metric_value" instead "paid_media_var" and "spend"
+## are now used to accommodate this change. Also the returned output is a list now and
+## contains also the plot.
+## ------------------------------------------------------------------------------------##
 
-# calculates a variet of statistics to estimate model quality, including 
-# mse, rmse, mae, mape, mdape, smape, coverage
-pred_sample = predictive_samples(m, df_train)
+# Get response for 80k from result saved in robyn_object
+Spend1 <- 60000
+Response1 <- robyn_response(
+  robyn_object = robyn_object
+  #, select_build = 1 # 2 means the second refresh model. 0 means the initial model
+  , media_metric = "display_S"
+  , metric_value = Spend1)
+Response1$response / Spend1 # ROI for search 80k
+Response1$plot
 
-# calculates the RMSE, MAPE, and SMAPE for comparison to other models
-rmse = performance_metrics(cv, metrics = 'rmse',
-                           rolling_window = 0.1)
-mape = performance_metrics(cv, metrics = 'mape',
-                           rolling_window = 0.1)
-smape = performance_metrics(cv, metrics = 'smape',
-                           rolling_window = 0.1)
+# Get response for 81k
+Spend2 <- Spend1 + 1000
+Response2 <- robyn_response(
+  robyn_object = robyn_object
+  #, select_build = 1
+  , media_metric = "influence_S"
+  , metric_value = Spend2)
+Response2$response / Spend2 # ROI for search 81k
+Response2$plot
 
-#### Creates two 12 week windows from the predicted and actual values
-#### to be used to plot against each other and create more metrics
-fcst_12 <- subset(fcst, ds > '2022-02-28' & ds < '2022-05-22')
-fcst_12 <- fcst_12[,c('ds', 'yhat', 'yhat_lower', 'yhat_upper')]
-names(fcst_12)[2] <- "y"
-fcst_12$y_obs <- df_test$y
+# Marginal ROI of next 1000$ from 80k spend level for search
+(Response2$response - Response1$response) / (Spend2 - Spend1)
 
-# plot of y_hat, y_hat_upper, y_hat_lower, and observed against each other
-matplot(fcst_12$ds, fcst_12, type = c("l"), lty = 1, lwd = 2,
-        pch = 1, col = 2:5, xlab = 'Time', ylab = 'Predicted Revenue', 
-        axes = FALSE,)
-leg.txt <- c("Observed", "Predicted", "Pred. Lower Bound", "Pred. Upper Bound")
-legend('top', leg.txt, bg = "gray90", col=2:5, pch=1)
-axis(1, fcst_12$ds, format(fcst_12$ds, "%b %d"), cex.axis = .7)
-box()
+## Example of getting paid media exposure response curves
+imps <- 50000000
+response_imps <- robyn_response(
+  robyn_object = robyn_object
+  #, select_build = 1
+  , media_metric = "app_S"
+  , metric_value = imps)
+response_imps$response / imps * 1000
+response_imps$plot
 
+## Example of getting organic media exposure response curves
+sendings <- 30000
+response_sending <- robyn_response(
+  robyn_object = robyn_object
+  #, select_build = 1
+  , media_metric = "circular_S"
+  , metric_value = sendings)
+response_sending$response / sendings * 1000
+response_sending$plot
 
-###### Calculations of RMSE and two for RSS for the past 12 weeks ####
-test = df_test$y
-fcst_y = fcst_12$y
+################################################################
+#### Optional: get old model results
 
-# Backup RSS from the 12 week prediction period
-total = 0
-for (i in 1:12) {
-  temp = (fcst_y[i] - test[i])^2
-  total = total + temp
-}
-# print(total)
+# Get old hyperparameters and select model
+# dt_hyper_fixed <-
+# data.table::fread("~/Desktop/2022-03-31 12.32 rf4/pareto_hyperparameters.csv")
+# select_model <- "1_25_9"
+# dt_hyper_fixed <- dt_hyper_fixed[solID == select_model]
 
-## This can recreate the chart if need be
-Chart <- data.frame(matrix(ncol = 5, nrow = 2))
-colnames(Chart) <- c('RSS', 'RSME', 'RSME_12', 'MAPE', 'SMAPE')
+# OutputCollectFixed <- robyn_run(
+# InputCollect must be provided by robyn_inputs with same data and parameters as before
+#   InputCollect = InputCollect
+#   , plot_folder = robyn_object
+#   , dt_hyper_fixed = dt_hyper_fixed)
+#
+# # Save Robyn object for further refresh
+# robyn_save(robyn_object = robyn_object
+#            , select_model = select_model
+#            , InputCollect = InputCollect
+#            , OutputCollect = OutputCollectFixed)
 
-# this section records the statistics for the chart
+########################################################################################
+# Glossary
+## 3. Hyperparameter interpretation & recommendation:
 
-# RSS - a measure that subtracts the predicted value from the model
-# from the observed and squares their difference, then sums all of the
-# total differences
+## Geometric adstock: Theta is the only parameter and means fixed decay rate. Assuming TV
+## spend on day 1 is 100€ and theta = 0.7, then day 2 has 100*0.7=70€ worth of effect
+## carried-over from day 1, day 3 has 70*0.7=49€ from day 2 etc. Rule-of-thumb for common
+## media genre: TV c(0.3, 0.8), OOH/Print/Radio c(0.1, 0.4), digital c(0, 0.3)
 
-# RSME - is an excellent measure that minimizes deviations or residuals, but
-# is sensitive to outliers
+# Weibull CDF adstock: The Cumulative Distribution Function of Weibull has two parameters
+# , shape & scale, and has flexible decay rate, compared to Geometric adstock with fixed
+# decay rate. The shape parameter controls the shape of the decay curve. Recommended
+# bound is c(0.0001, 2). The larger the shape, the more S-shape. The smaller, the more
+# L-shape. Scale controls the inflexion point of the decay curve. We recommend very
+# conservative bounce of c(0, 0.1), because scale increases the adstock half-life greatly.
 
-# RSME_12 - We performed the RMSE calculation for the last twelve weeks
-# of the predictions against the actuals
+# Weibull PDF adstock: The Probability Density Function of the Weibull also has two
+# parameters, shape & scale, and also has flexible decay rate as Weibull CDF. The
+# difference is that Weibull PDF offers lagged effect. When shape > 2, the curve peaks
+# after x = 0 and has NULL slope at x = 0, enabling lagged effect and sharper increase and
+# decrease of adstock, while the scale parameter indicates the limit of the relative
+# position of the peak at x axis; when 1 < shape < 2, the curve peaks after x = 0 and has
+# infinite positive slope at x=0, enabling lagged effect and slower increase and decrease
+# of adstock, while scale has the same effect as above; when shape = 1, the curve peaks at
+# x = 0 and reduces to exponential decay, while scale controls the inflexion point; when
+# 0 < shape < 1, the curve peaks at x = 0 and has increasing decay, while scale controls
+# the inflexion point. When all possible shapes are relevant, we recommend c(0.0001, 10)
+# as bounds for shape; when only strong lagged effect is of interest, we recommend
+# c(2.0001, 10) as bound for shape. In all cases, we recommend conservative bound of
+# c(0, 0.1) for scale. Due to the great flexibility of Weibull PDF, meaning more freedom
+# in hyperparameter spaces for Nevergrad to explore, it also requires larger iterations
+# to converge.
 
-# MAPE - an intuitive diagnostic that is often used for ML, typically
-# used for forecasting accuracy. There are some issues with its interpretation,
-# namely it's unusual behavior nearer zero
+# Hill function for saturation: Hill function is a two-parametric function in Robyn with
+# alpha and gamma. Alpha controls the shape of the curve between exponential and s-shape.
+# Recommended bound is c(0.5, 3). The larger the alpha, the more S-shape. The smaller, the
+# more C-shape. Gamma controls the inflexion point. Recommended bounce is c(0.3, 1). The
+# larger the gamma, the later the inflection point in the response curve.
 
-# SMAPE - a relative of MAPE, it is based on on percentages away in error.
-# it does not deal well with some asymmetric data
-
-RSS <- sum((fcst_y - test)^2)
-RSME <- round(mean(rmse$rmse), 4)
-RSME_12 <- round(sqrt(mean((test - fcst_y)^2)), 4)
-MAPE <- round(mean(mape$mape), 4)
-SMAPE <- round(mean(smape$smape), 4)
-
-# by adding the starts to this chart, printing it,
-# and commenting it out, it would be useful for testing
-Chart[1,1:5] <- c(RSS, RSME, RSME_12, MAPE, SMAPE)
-print(Chart)
-
-# Nature's Path Model #1 mk 1
-# RSS     RSME  RSME_12   MAPE  SMAPE
-# 1 55321963933 192098.5 67898.19 0.2832 0.2646
-
-# Nature's Path Model #1 mk2
-# RSS     RSME  RSME_12   MAPE  SMAPE
-# 1 57887436328 58473.42 69454.68 0.1122 0.0999
-
-#################### SUMMARY ####################
-#### Summary: training model over two years may have improved
-#### fit, it seems like holiday is throwing at least one year's
-#### worth of modeling is off, the RSME, MAPE, and SMAPE have
-#### continuously improved, as well as the unexpected spike
-#### right before the the prediction period ended did not help
-#### anything
+## 4. Set individual hyperparameter bounds. They either contain two values e.g. c(0, 0.5),
+# or only one value, in which case you'd "fix" that hyperparameter.
