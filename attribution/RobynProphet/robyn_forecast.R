@@ -79,26 +79,31 @@ hyper_limits()
 # transformed by adstock & saturation.
 
 hyperparameters <- list(
-  # beef_alphas = c(0.5, 3)
-  # , beef_gammas = c(0.3, 1)
-  # , beef_scales = c(0, 0.1)
-  # , beef_shapes = c(2.0001, 10)
-   bloggers_S_alphas = c(0.5, 3)
+  bloggers_S_alphas = c(0.5, 3)
   , bloggers_S_gammas = c(0.3, 1)
   , bloggers_S_scales = c(0, 0.1)
   , bloggers_S_shapes = c(2.0001, 10)
+  
   , chicken_alphas = c(0.5, 3)
   , chicken_gammas = c(0.3, 1)
   , chicken_scales = c(0, 0.1)
   , chicken_shapes = c(2.0001, 10)
+  
   , coupon_S_alphas = c(0.5, 3)
   , coupon_S_gammas = c(0.3, 1)
   , coupon_S_scales = c(0, 0.1)
   , coupon_S_shapes = c(2.0001, 10)
+  
+  , display_S_alphas = c(0.5, 3)
+  , display_S_gammas = c(0.3, 1)
+  ,  display_S_gammas= c(0, 0.1)
+  , display_S_shapes = c(2.0001, 10)
+  
   , display_S_alphas = c(0.5, 3)
   , display_S_gammas = c(0.3, 1)
   , display_S_scales = c(0, 0.1)
   , display_S_shapes = c(2.0001, 10)
+  
   , radio_S_alphas = c(0.5, 3)
   , radio_S_gammas = c(0.3, 1)
   , radio_S_scales = c(0, 0.1)
@@ -120,27 +125,7 @@ print(InputCollect)
 # channel A usually has $100K weekly spend and the experimental holdout is 70%, input
 # the point-estimate for the $30K, not the $70K.
 
-# calibration_input <- data.frame(
-#   # channel name must in paid_media_vars
-#   channel = c('bloggers_S', "coupon_S", "display_S", "radio_S", "chicken", "beef"),
-#   # liftStartDate must be within input data range
-#   liftStartDate = as.Date(c("2019-12-08", "2019-12-08", "2019-12-08", "2019-12-08",
-#                             "2019-12-08", "2019-12-08")),
-#   # liftEndDate must be within input data range
-#   liftEndDate = as.Date(c("2021-04-17", "2021-04-17", "2021-04-17", "2021-04-17",
-#                           "2021-04-17", "2021-04-17")),
-#   # Provided value must be on same campaign level in model, same metric as
-#   # dep_var_type
-#   liftAbs = c(400000, 300000, 200000, 100000, 100000, 100000),
-#   # Spend within experiment: should match within a 10% error your spend on date range
-#   # for each channel from dt_input
-#   spend = c(90990000, 104400000, 705300000, 567600000, 100000000, 100000000),
-#   # Confidence: if frequentist experiment, you may use 1 - pvalue
-#   confidence = c(0.85, .83, 0.8, 0.99, .9, .9),
-#   # KPI measured: must match your dep_var
-#   metric = c("revenue", "revenue", "revenue", "revenue", "revenue", "revenue"))
-# InputCollect <- robyn_inputs(InputCollect = InputCollect,
-#                              calibration_input = calibration_input)
+
 
 ################################################################
 #### Step 3: Build initial model
