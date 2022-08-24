@@ -5,14 +5,14 @@ OPTIONS(model_type='ARIMA_PLUS',
     data_frequency='WEEKLY',
     holiday_region='US' ) AS
 SELECT
-  avg(sales) as sales,
+  avg(revenue) as sales,
   week
 FROM
-   projectmercuryv1.bq_dev_db.kind_ml 
+   `tyson-ml-07-28-22.bq_dev.kind_forecast_train` AS kind_data
    group by week
 ORDER BY
   week
 
 SELECT 
  *
- FROM ML.FORECAST(MODEL bq_dev.forecast, STRUCT(12 AS horizon, 0.8 AS confidence_level))
+ FROM ML.FORECAST(MODEL bq_dev.forecast, STRUCT(16 AS horizon, 0.8 AS confidence_level))
