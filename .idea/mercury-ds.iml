@@ -4,23 +4,20 @@
     <content url="file://C:/Python/Python39/site-packages">
       <sourceFolder url="file://C:/Python/Python39/site-packages" isTestSource="false" />
     </content>
-    <content url="file://$MODULE_DIR$" />
-    <content url="file://$MODULE_DIR$" />
-    <content url="file://$MODULE_DIR$" />
-    <content url="file://$MODULE_DIR$" />
-    <content url="file://$USER_HOME$/anaconda3/DLLs">
-      <sourceFolder url="file://$USER_HOME$/anaconda3/DLLs" isTestSource="false" />
+    <content url="file://$USER_HOME$/AppData/Roaming/Python/Python39/site-packages/pythonwin">
+      <sourceFolder url="file://$USER_HOME$/AppData/Roaming/Python/Python39/site-packages/pythonwin" isTestSource="false" />
     </content>
-    <content url="file://$USER_HOME$/anaconda3/Lib">
-      <sourceFolder url="file://$USER_HOME$/anaconda3/Lib" isTestSource="false" />
-      <sourceFolder url="file://$USER_HOME$/anaconda3/Lib/site-packages" isTestSource="false" />
-      <sourceFolder url="file://$USER_HOME$/anaconda3/Lib/site-packages/pythonwin" isTestSource="false" />
-      <sourceFolder url="file://$USER_HOME$/anaconda3/Lib/site-packages/win32" isTestSource="false" />
+    <content url="file://$USER_HOME$/AppData/Roaming/Python/Python39/site-packages/win32">
+      <sourceFolder url="file://$USER_HOME$/AppData/Roaming/Python/Python39/site-packages/win32" isTestSource="false" />
     </content>
-    <content url="file://$USER_HOME$/anaconda3/Lib/site-packages/win32/lib">
-      <sourceFolder url="file://$USER_HOME$/anaconda3/Lib/site-packages/win32/lib" isTestSource="false" />
+    <content url="file://$USER_HOME$/AppData/Roaming/Python/Python39/site-packages/win32/lib">
+      <sourceFolder url="file://$USER_HOME$/AppData/Roaming/Python/Python39/site-packages/win32/lib" isTestSource="false" />
     </content>
-    <orderEntry type="jdk" jdkName="Python 3.9 (base) (2)" jdkType="Python SDK" />
+    <content url="file://$MODULE_DIR$" />
+    <content url="file://$MODULE_DIR$" />
+    <content url="file://$MODULE_DIR$" />
+    <content url="file://$MODULE_DIR$" />
+    <orderEntry type="jdk" jdkName="Python 3.8 (Attribution_EDA)" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
   </component>
   <component name="PackageRequirementsSettings">
