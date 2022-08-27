@@ -4,11 +4,20 @@
     <content url="file://C:/Python/Python39/site-packages">
       <sourceFolder url="file://C:/Python/Python39/site-packages" isTestSource="false" />
     </content>
+    <content url="file://$USER_HOME$/AppData/Roaming/Python/Python39/site-packages/pythonwin">
+      <sourceFolder url="file://$USER_HOME$/AppData/Roaming/Python/Python39/site-packages/pythonwin" isTestSource="false" />
+    </content>
+    <content url="file://$USER_HOME$/AppData/Roaming/Python/Python39/site-packages/win32">
+      <sourceFolder url="file://$USER_HOME$/AppData/Roaming/Python/Python39/site-packages/win32" isTestSource="false" />
+    </content>
+    <content url="file://$USER_HOME$/AppData/Roaming/Python/Python39/site-packages/win32/lib">
+      <sourceFolder url="file://$USER_HOME$/AppData/Roaming/Python/Python39/site-packages/win32/lib" isTestSource="false" />
+    </content>
     <content url="file://$MODULE_DIR$" />
     <content url="file://$MODULE_DIR$" />
     <content url="file://$MODULE_DIR$" />
     <content url="file://$MODULE_DIR$" />
-    <orderEntry type="inheritedJdk" />
+    <orderEntry type="jdk" jdkName="Python 3.10 (mercury-ds)" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
   </component>
   <component name="PackageRequirementsSettings">
