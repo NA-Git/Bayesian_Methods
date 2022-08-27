@@ -21,7 +21,7 @@ use_condaenv("r-reticulate")
 setwd('G:/My Drive/IN/Data/Robyn')
 Sys.setenv(R_FUTURE_FORK_ENABLE = TRUE) # Force multicore when using RStudio
 options(future.fork.enable = TRUE)
-df <- read.csv('robyn_test_current.csv', fileEncoding = 'UTF-8-BOM')
+df <- read.csv('robyn_clean.csv', fileEncoding = 'UTF-8-BOM')
 # Check holidays from Prophet enables other seasonanility features
 data("dt_prophet_holidays")
 head(dt_prophet_holidays)
@@ -42,20 +42,20 @@ InputCollect <- robyn_inputs(
   , dep_var_type = "revenue" # "revenue" (ROI) or "conversion" (CPA)
   , prophet_vars = c("trend", "season", "holiday") # "trend","season", "holiday"
   , prophet_country = "US" # input one country of dt_prophet_holidays
-  , context_vars = c("unemployment") # e.g. competitors, discount, unemployment etc
-  , paid_media_spends = c("banner_S", "display_S", "coupon_S", 'event_S')
-  , paid_media_vars = c("banner_i", "display_I", 'coupon_I', 'event_I')
+  , context_vars = c("cag_V") # e.g. competitors, discount, unemployment etc
+  , paid_media_spends = c("bloggers_S", "coupon_S", "display_S", 'radio_S')
+  , paid_media_vars = c("bloggers_I", "coupon_I", "display_I", 'radio_I')
   # paid_media_vars are mandatory like paid_media_spends, and must have same order as
   # paid_media_spends. Use media exposure metrics like impressions,
   # GRP etc. If not applicable, use spend instead.
-  , organic_vars = c('print_I') # marketing activity without media spend
+  , organic_vars = c('chicken', 'beef') # marketing activity without media spend
   # ,factor_vars = ("incidents") # specify which variables in context_vars or
   # organic_vars are factorial
   # prophet pulls in your date range from the date variable, but the window start
   # and window end require you to put in dates that are in between and smaller
   # than your total dates
-  , window_start = "2019-10-07"
-  , window_end = "2021-07-05"
+  , window_start = "2019-10-21"
+  , window_end = "2021-05-02"
   , adstock = "weibull_pdf" # geometric, weibull_cdf or weibull_pdf.
 )
 print(InputCollect)
@@ -79,35 +79,30 @@ hyper_limits()
 # transformed by adstock & saturation.
 
 hyperparameters <- list(
-  banner_S_alphas = c(0.5, 8)
-  , banner_S_gammas = c(0.2, 1)
-  , banner_S_scales = c(0.01, 0.8)
-  , banner_S_shapes = c(1, 10)
-  # , app_s_alphas = c(0.5, 8)
-  # , app_s_gammas = c(0.2, 1)
-  # , app_s_scales = c(0.01, 0.8)
-  # , app_s_shapes = c(1, 10)
-  # , circular_I_alphas = c(0.5, 8)
-  # , circular_I_gammas = c(0.2, 1)
-  # , circular_I_scales = c(0.01, 0.8)
-  # , circular_I_shapes = c(1, 10)
-  , coupon_S_alphas = c(0.5, 8)
-  , coupon_S_gammas = c(0.2, 1)
-  , coupon_S_scales = c(0.01, 0.8)
-  , coupon_S_shapes = c(1, 10)
-  , display_S_alphas = c(0.5, 8)
-  , display_S_gammas = c(0.2, 1)
-  , display_S_scales = c(0.01, 0.8)
-  , display_S_shapes = c(1, 10)
-  , event_S_alphas = c(0.5, 8)
-  , event_S_gammas = c(0.2, 1)
-  , event_S_scales = c(0.01, 0.8)
-  , event_S_shapes = c(1, 10)
-  , print_I_alphas = c(0.5, 8)
-  , print_I_gammas = c(0.2, 1)
-  , print_I_scales = c(0.01, 0.8)
-  , print_I_shapes = c(1, 10)
-)
+  beef_alphas = c(0.5, 3)
+  , beef_gammas = c(0.3, 1)
+  , beef_scales = c(0, 0.1)
+  , beef_shapes = c(2.0001, 10)
+  , bloggers_S_alphas = c(0.5, 3)
+  , bloggers_S_gammas = c(0.3, 1)
+  , bloggers_S_scales = c(0, 0.1)
+  , bloggers_S_shapes = c(2.0001, 10)
+  , chicken_alphas = c(0.5, 3)
+  , chicken_gammas = c(0.3, 1)
+  , chicken_scales = c(0, 0.1)
+  , chicken_shapes = c(2.0001, 10)
+  , coupon_S_alphas = c(0.5, 3)
+  , coupon_S_gammas = c(0.3, 1)
+  , coupon_S_scales = c(0, 0.1)
+  , coupon_S_shapes = c(2.0001, 10)
+  , display_S_alphas = c(0.5, 3)
+  , display_S_gammas = c(0.3, 1)
+  , display_S_scales = c(0, 0.1)
+  , display_S_shapes = c(2.0001, 10)
+  , radio_S_alphas = c(0.5, 3)
+  , radio_S_gammas = c(0.3, 1)
+  , radio_S_scales = c(0, 0.1)
+  , radio_S_shapes = c(2.0001, 10))
 
 #### 2a-3: Third, add hyperparameters into robyn_inputs()
 InputCollect <- robyn_inputs(InputCollect = InputCollect,
@@ -127,35 +122,36 @@ print(InputCollect)
 
 calibration_input <- data.frame(
   # channel name must in paid_media_vars
-  channel =  c("banner_S", "display_S", "coupon_S", 'event_S'),
+  channel = c('bloggers_S', "coupon_S", "display_S", "radio_S", "chicken", "beef"),
   # liftStartDate must be within input data range
-  liftStartDate = as.Date(c("2019-10-07", "2019-10-07", "2019-10-07", "2019-10-07")),
+  liftStartDate = as.Date(c("2019-12-08", "2019-12-08", "2019-12-08", "2019-12-08",
+                            "2019-12-08", "2019-12-08")),
   # liftEndDate must be within input data range
-  liftEndDate = as.Date(c("2021-04-05", "2021-04-05", "2021-04-05", "2021-04-05")),
+  liftEndDate = as.Date(c("2021-04-17", "2021-04-17", "2021-04-17", "2021-04-17",
+                          "2021-04-17", "2021-04-17")),
   # Provided value must be on same campaign level in model, same metric as
   # dep_var_type
-  liftAbs = c(2100000, 1000000, 1500000, 1500000),
+  liftAbs = c(400000, 300000, 200000, 100000, 100000, 100000),
   # Spend within experiment: should match within a 10% error your spend on date range
   # for each channel from dt_input
-  spend = c(2015000, 930300, 1235000, 1313000),
+  spend = c(90990000, 104400000, 705300000, 567600000, 100000000, 100000000),
   # Confidence: if frequentist experiment, you may use 1 - pvalue
-  confidence = c(0.8, .8, 0.8, 0.8),
+  confidence = c(0.9, .9, 0.9, 0.9, .9, .9),
   # KPI measured: must match your dep_var
-  metric = c("revenue", "revenue", "revenue", 'revenue'))
+  metric = c("revenue", "revenue", "revenue", "revenue", "revenue", "revenue"))
 InputCollect <- robyn_inputs(InputCollect = InputCollect,
                              calibration_input = calibration_input)
 
 ################################################################
 #### Step 3: Build initial model
-# ?robyn_run
-# parallel::detectCores()
+
 ## Run all trials and iterations. Use ?robyn_run to check parameter definition
 OutputModels <- robyn_run(
   InputCollect = InputCollect # feed in all model specification
   , cores = 16 # default ??? Test tese functions
-  , seed = 42
-  , iterations = 3000 # try to increase to converge faster
-  , trials = 15 # try to increase to converge faster
+  #, add_penalty_factor = FALSE # Untested feature. Use with caution.
+  , iterations = 2500 # try to increase to converge faster
+  , trials = 20 # try to increase to converge faster
   , outputs = FALSE # outputs = FALSE disables direct model output
 )
 print(OutputModels)
@@ -191,7 +187,7 @@ print(OutputCollect)
 #### Step 4: Select and save the initial model
 ## Compare all model one-pagers and select one that mostly reflects your business reality
 print(OutputCollect)
-select_model <- "4_172_1" # select one from above
+select_model <- "7_124_11" # select one from above
 ExportedModel <- robyn_save(
   robyn_object = robyn_object, # model object location and name
   select_model = select_model, # selected model ID
