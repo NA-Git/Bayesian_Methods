@@ -17,7 +17,34 @@ conda_create("r-reticulate")
 conda_install("r-reticulate", "nevergrad", pip = TRUE)
 use_condaenv("r-reticulate")
 ################################################################
+#### Step Alpha: Data Creation
+# Ideal requirements: two years worth of data, consistent information
+# on spend and impressions (FB prefers impressions over clicks),
+# several tactics with the associated information necessary
+# Procedure: with a dataset such as the one described above, 
+# eliminate all but date, revenue, tactic category, tactic spend,
+# and impressions or something similar
+# then create a pivot table that uses weekly dates as rows,
+# and has as the columns a tactic category's spend and another
+# for impressions. Revenue should also be remaining. 
+
+# Robyn suggests a 10:1 ration between observations and variables,
+# so you'll likely have more tactics than you need and have to cull them down
+# I wrote a program to explore the similarity between some of our other data,
+# and most importantly to see how to narrow down the data to be useful
+# and Robyn
+
+# Robyn does not like nulls, nor too many zeroes, and if imputing missing
+# values, you need to be very deliberate on how you do it. Multicollinearity
+# is a concern, but less so with ridge regression, so you have a bit of wiggle
+# room there. just expect to have many of your models fail to converge before
+# you start finding some that do.
+
+################################################################
 #### Step 1: Load data
+# this section is important for the following reasons: it tells
+# where to send the output that assists in selecting a model later in the
+# program and anything else
 setwd('C:/Users/norri/Desktop/')
 Sys.setenv(R_FUTURE_FORK_ENABLE = TRUE) # Force multicore when using RStudio
 options(future.fork.enable = TRUE)
@@ -25,12 +52,24 @@ df <- read.csv('C:/Users/norri/Desktop/robyn_84.csv')
 
 data("dt_prophet_holidays")
 head(dt_prophet_holidays)
-
+# I've found it's best to set the full path to make sure this file is 
+# in the right spot and can be overwritten
 robyn_object <- "C:/Users/norri/Desktop/MyRobyn.RDS"
 
 ################################################################
 #### Step 2a: For first time user: Model specification in 4 steps
 #### 2a-1: First, specify input variables
+
+# other interesting information: starting dates need to be on a Monday
+# or a Sunday. in the dataset, it must be spelled 'DATE' and also 'revenue'
+# organic factors are nice if you can find them, but they are not necessary,
+# neither is context_vars
+# the convention is an abbreviation of your variables with an S at the end for 
+# spend or an I for impressions
+# Finally, this is where you pick your distribution. It does affect how the
+# program will run for you, so ensure you know the ins and outs of them before
+# you select one; notes on the distributions are at the end of this file
+
 InputCollect <- robyn_inputs(
   dt_input = df
   , dt_holidays = dt_prophet_holidays
@@ -59,20 +98,15 @@ print(InputCollect)
 
 #### 2a-2: Second, define and add hyperparameters
 ## hyperparameter names needs to be base on paid_media_spends names. Run:
+## Run both of these to get the names, in order, of your hyperparameters
+## along with the ranges in which to search for their true value
 hyper_names(adstock = InputCollect$adstock, all_media = InputCollect$all_media)
 hyper_limits()
 
-# plot_adstock(plot = TRUE)
-# plot_saturation(plot = TRUE)
-## ----------------------------------------------------------------------------------- ##
-## Guide to setup & understand hyperparameters
-#### TO DO
-## 1. IMPORTANT: set plot = TRUE to see helper plots of hyperparameter's
-# effect in transformation
-# Write function here to pass through all the info
-# 2. Get correct hyperparameter names:
-# All variables in paid_media_spends and organic_vars require hyperparameter and will be
-# transformed by adstock & saturation.
+plot_adstock(plot = TRUE)
+plot_saturation(plot = TRUE)
+## it is possible to write a function to pass through the information in 
+## hyper_names() and hyper_limits() to create the hyperparameters code below
 
 hyperparameters <- list(
   banner_S_alphas = c(0.01, 9.9)
@@ -97,7 +131,7 @@ hyperparameters <- list(
 InputCollect <- robyn_inputs(InputCollect = InputCollect,
                              hyperparameters = hyperparameters)
 print(InputCollect)
-#### 2a-4: Fourth (optional), model calibration / add experimental input
+#### 2a-4: This is supposed to be optional, but it really isn't. 
 ## Guide for calibration source
 # 1. We strongly recommend to use experimental and causal results that are considered
 # ground truth to calibrate MMM. Usual experiment types are people-based (e.g. Facebook
@@ -110,22 +144,30 @@ print(InputCollect)
 # the point-estimate for the $30K, not the $70K.
 
 calibration_input <- data.frame(
-  # channel name must in paid_media_vars
+  # channel name must in paid_media_vars (thhe ones with S's)
   channel = c('coupon_S',	'email_S',	'blog_S',	'banner_S'),
   # liftStartDate must be within input data range
+  # set this range very close to the beginning and end of your data range,
+  # unless there were anomalies around those periods of time
   liftStartDate = as.Date(c("2019-10-12", "2019-10-12", "2019-10-12", "2019-10-12")),
   # liftEndDate must be within input data range
   liftEndDate = as.Date(c("2021-05-06", "2021-05-06", "2021-05-06", "2021-05-06")),
   # Provided value must be on same campaign level in model, same metric as
   # dep_var_type
+  # in this example, these values are, in the order of the vars in the channel
+  # above, the number of impressions over the period of time that were paid for
+  # by the spend variables
   liftAbs = c(35193762546, 7736674881, 52307189692, 189096351424),
   # Spend within experiment: should match within a 10% error your spend on date range
   # for each channel from dt_input
+  # once again, in order, this is the spend over the period of time to leader to
+  # impressions above
   spend = c(359349212, 93605730, 380636715, 1079117583),
   # Confidence: if frequentist experiment, you may use 1 - pvalue
   confidence = c(.95, .95, .95, .95),
   # KPI measured: must match your dep_var
   metric = c("revenue", "revenue", "revenue", 'revenue'))
+# pay attention to what this check tells you; it will save you headache
 InputCollect <- robyn_inputs(InputCollect = InputCollect,
                              calibration_input = calibration_input)
 
@@ -134,6 +176,17 @@ InputCollect <- robyn_inputs(InputCollect = InputCollect,
 # ?robyn_run
 parallel::detectCores()
 ## Run all trials and iterations. Use ?robyn_run to check parameter definition
+## setting a seed keeps your results consistent
+## more likely than not when run on Windows and not Linux, it will default to
+## one core, so clearly this runs faster on Linux
+## each trial is a run of however many iterations you run, so 5 trials of 2000
+## iterations will be 100000 iterations. increasing them can help the model,
+## but it can also take several hours and still not converge. I suggest beginning
+## with a lower number and increasing if it seems promising
+## another technique is to take a run's results and pass it through the 
+## following prediction coming up in the program to see if they perform
+## badly
+
 OutputModels <- robyn_run(
   InputCollect = InputCollect # feed in all model specification
   , cores = parallel::detectCores() # default ??? Test tese functions
@@ -144,10 +197,17 @@ OutputModels <- robyn_run(
 )
  print(OutputModels)
 
+### the above section is the most crucial part of the model. ideally, the  
+### DECOMP>RSSD and NRMSE will converge (I don't consider MAPE as crucial
+### to determining the model's viability). if the OutputModel has converged
+### then most of the rest of the pgram should run smoothly, MAYBE
+ 
 ## Check MOO (multi-objective optimization) convergence plots
 OutputModels$convergence$moo_distrb_plot
 OutputModels$convergence$moo_cloud_plot
 
+## I choose to select only one Pareto front so the best potential models are 
+## are placed there
 ## Calculate Pareto optimality, cluster and export results and plots. See ?robyn_outputs
 OutputCollect <- robyn_outputs(
   InputCollect, OutputModels
@@ -174,6 +234,8 @@ print(OutputCollect)
 ################################################################
 #### Step 4: Select and save the initial model
 ## Compare all model one-pagers and select one that mostly reflects your business reality
+## the folder exported to the desktop has images and spreadsheets that can help you 
+## assist in making the decision which is the best potential model to choose from
 print(OutputCollect)
 select_model <- "4_110_4" # select one from above
 ExportedModel <- robyn_save(
@@ -230,6 +292,8 @@ plot(AllocatorCollect2)
 
 ## A csv is exported into the folder for further usage. Check schema here:
 ## https://github.com/facebookexperimental/Robyn/blob/main/demo/schema.R
+
+#### THIS PART SEEMS TO BE MALFUNCTIONING, THOUGH IT"S NOT THAT IMPORTANT
 
 ## QA optimal response
 # Pick any media variable: InputCollect$all_media
@@ -296,6 +360,10 @@ if (TRUE) {
 
 ################################################################
 #### Step 7: Get budget allocation recommendation based on selected refresh runs
+
+####### This section is to help you allocate a budget; it's fun to play with,
+####### but to get sensible answers, you will want to include people who know
+####### the clients
 
 # Run ?robyn_allocator to check parameter definition
 AllocatorCollect <- robyn_allocator(
