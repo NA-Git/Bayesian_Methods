@@ -13,8 +13,8 @@ library('ggplot2')
 
 # this file was preformatted to work with Prophet
 df <- read.csv('G:/My Drive/IN/Data/Data_Standard/kind_forecast_train.csv')
-
-# to run prophet, there needs to be only two columns: ds, which is 
+df_test <- read.csv('G:/My Drive/IN/Data/Data_Standard/kind_forecast_test.csv')
+# to run prophet, there needs to be only two columns: ds, which is
 # formatted in YYYY-MM-DD format, and y, which is usually sales
 # for the model to be working correctly, date needs to be sorted in
 # descending order, then converted to POSIXct format.
@@ -22,7 +22,13 @@ df <- read.csv('G:/My Drive/IN/Data/Data_Standard/kind_forecast_train.csv')
 df <- df[order(df$ds),] # orders the df$ds column in ascending order
 df$ds <- as.POSIXct(df$ds, "%Y-%m-%d", tz = "UTC", origin = "2018-05-20")
 
-prophet_holidays <- read.csv("G:/My Drive/IN/Data/Prophet/prophet_holidays.csv")
+df$prime <- 0
+df$prime[8] <- 1
+df$prime[61] <- 1
+df$prime[126] <- 1
+df$prime[162] <- 1
+
+prophet_holidays <- read.csv("G:/My Drive/IN/Data/Robyn/dt_prophet_holidays.csv")
 prophet_holidays <- prophet_holidays[prophet_holidays$country == 'US',]
 
 # the most important arguments to set are growth, seasonality,
@@ -46,10 +52,17 @@ m <- prophet(
   mcmc.samples = 800,
   interval.width = .20,
   uncertainty.samples = 200,
-  fit = TRUE
+  fit = FALSE
 )
+m <- add_regressor(m, 'prime')
+m <- fit.prophet(m, df)
 
 future <- make_future_dataframe(m, periods = 16, freq = 'week')
+future$prime <- 0
+future$prime[8] <- 1
+future$prime[61] <- 1
+future$prime[126] <- 1
+future$prime[162] <- 1
 forecast <- predict(m, future)
 fcst <- predict(m, future)
 plot(m, fcst)
@@ -78,7 +91,7 @@ plot_cross_validation_metric(cv, metric = 'smape', rolling_window = .1)
 
 # calculates a variet of statistics to estimate model quality, including 
 # mse, rmse, mae, mape, mdape, smape, coverage
-pred_sample = predictive_samples(m, df_train)
+pred_sample = predictive_samples(m, df_test)
 sixteen_wk_RMSE = sqrt(mean((pred_sample$trend-pred_sample$yhat)^2))
 #### Creates two 16 week windows from the predicted and actual values
 #### to be used to plot against each other and create more metrics
@@ -104,7 +117,7 @@ print(sixteen_wk_RMSE)
 # total differences
 # RSME - is an excellent measure that minimizes deviations or residuals, but
 # is sensitive to outliers
-# RSME_12 - We performed the RMSE calculation for the last twelve weeks
+# RSME_16 - We performed the RMSE calculation for the last twelve weeks
 # of the predictions against the actuals
 # MAPE - an intuitive diagnostic that is often used for ML, typically
 # used for forecasting accuracy. There are some issues with its interpretation,
