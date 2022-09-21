@@ -48,7 +48,7 @@ use_condaenv("r-reticulate")
 setwd('C:/Users/norri/Desktop/')
 Sys.setenv(R_FUTURE_FORK_ENABLE = TRUE) # Force multicore when using RStudio
 options(future.fork.enable = TRUE)
-df <- read.csv('C:/Users/norri/Desktop/robyn_84.csv')
+df <- read.csv('C:/Users/norri/Desktop/robyn_85.csv')
 
 data("dt_prophet_holidays")
 head(dt_prophet_holidays)
@@ -79,8 +79,8 @@ InputCollect <- robyn_inputs(
   , prophet_vars = c("trend", "season", "holiday") # "trend","season", "holiday"
   , prophet_country = "US" # input one country of dt_prophet_holidays
   , context_vars = c("cargill", 'inflation') # e.g. competitors, discount, unemployment etc
-  , paid_media_spends = c('coupon_S',	'email_S', 'blog_S',	'banner_S')
-  , paid_media_vars = c('coupon_I',	'email_I', 'blog_I',	'banner_I')
+  , paid_media_spends = c('coupon_S',	'social_S', 'blog_S',	'banner_S')
+  , paid_media_vars = c('coupon_I',	'social_I', 'blog_I',	'banner_I')
   # paid_media_vars are mandatory like paid_media_spends, and must have same order as
   # paid_media_spends. Use media exposure metrics like impressions,
   # GRP etc. If not applicable, use spend instead.
@@ -121,10 +121,10 @@ hyperparameters <- list(
   , coupon_S_gammas = c(0.01, 1)
   , coupon_S_scales = c(0, 1)
   , coupon_S_shapes = c(.1, 19.9)
-  , email_S_alphas = c(0.01, 9.9)
-  , email_S_gammas = c(0.01, 1)
-  , email_S_scales = c(0, 1)
-  , email_S_shapes = c(.1, 19.9)
+  , social_S_alphas = c(0.01, 9.9)
+  , social_S_gammas = c(0.01, 1)
+  , social_S_scales = c(0, 1)
+  , social_S_shapes = c(.1, 19.9)
 )
 
 #### 2a-3: Third, add hyperparameters into robyn_inputs()
@@ -145,7 +145,7 @@ print(InputCollect)
 
 calibration_input <- data.frame(
   # channel name must in paid_media_vars (thhe ones with S's)
-  channel = c('coupon_S',	'email_S',	'blog_S',	'banner_S'),
+  channel = c('coupon_S',	'social_S',	'blog_S',	'banner_S'),
   # liftStartDate must be within input data range
   # set this range very close to the beginning and end of your data range,
   # unless there were anomalies around those periods of time
@@ -157,14 +157,14 @@ calibration_input <- data.frame(
   # in this example, these values are, in the order of the vars in the channel
   # above, the number of impressions over the period of time that were paid for
   # by the spend variables
-  liftAbs = c(35193762546, 7736674881, 52307189692, 189096351424),
+  liftAbs = c(35822123642, 8074610714, 52486728434, 189096351424),
   # Spend within experiment: should match within a 10% error your spend on date range
   # for each channel from dt_input
   # once again, in order, this is the spend over the period of time to leader to
   # impressions above
-  spend = c(359349212, 93605730, 380636715, 1079117583),
+  spend = c(362145607, 63369944, 381479077, 1079117584),
   # Confidence: if frequentist experiment, you may use 1 - pvalue
-  confidence = c(.95, .95, .95, .95),
+  confidence = c(.90, .90, .90, .90),
   # KPI measured: must match your dep_var
   metric = c("revenue", "revenue", "revenue", 'revenue'))
 # pay attention to what this check tells you; it will save you headache
@@ -174,7 +174,7 @@ InputCollect <- robyn_inputs(InputCollect = InputCollect,
 ################################################################
 #### Step 3: Build initial model
 # ?robyn_run
-parallel::detectCores()
+# parallel::detectCores()
 ## Run all trials and iterations. Use ?robyn_run to check parameter definition
 ## setting a seed keeps your results consistent
 ## more likely than not when run on Windows and not Linux, it will default to
@@ -189,10 +189,11 @@ parallel::detectCores()
 
 OutputModels <- robyn_run(
   InputCollect = InputCollect # feed in all model specification
+  , add_penalty_factor = TRUE
   , cores = parallel::detectCores() # default ??? Test tese functions
   , seed = 42
-  , iterations = 2000 # try to increase to converge faster
-  , trials = 5 # try to increase to converge faster
+  , iterations = 2500 # try to increase to converge faster
+  , trials = 10 # try to increase to converge faster
   , outputs = FALSE # outputs = FALSE disables direct model output
 )
  print(OutputModels)
@@ -237,7 +238,7 @@ print(OutputCollect)
 ## the folder exported to the desktop has images and spreadsheets that can help you 
 ## assist in making the decision which is the best potential model to choose from
 print(OutputCollect)
-select_model <- "4_110_4" # select one from above
+select_model <- "8_151_7" # select one from above
 ExportedModel <- robyn_save(
   robyn_object = robyn_object, # model object location and name
   select_model = select_model, # selected model ID
