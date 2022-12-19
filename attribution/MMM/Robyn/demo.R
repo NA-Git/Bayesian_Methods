@@ -85,7 +85,7 @@ data("dt_prophet_holidays")
 head(dt_prophet_holidays)
 
 # Directory where you want to export results to (will create new folders)
-robyn_object <- "C:/Users/norri/Desktop"
+robyn_object <- "../../../../../Desktop"
 
 ### DEPRECATED: It must have extension .RDS. The object name can be different than Robyn:
 # robyn_object <- "~/Desktop/MyRobyn.RDS"
