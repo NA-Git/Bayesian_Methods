@@ -1,0 +1,5 @@
+Date,Actual Sales,Forecast,Prediction Lower Bound,Prediction Upper Bound,Absolute Forecast Difference,Percent Difference
+2022-08-22,9887,4542,2914,6171,5345,0.5406
+2022-08-29,6816,4808,3015,6601,2008,0.2946
+2022-09-05,8274,5351,3481,7221,2923,0.3533
+2022-09-12,5511,4866,2955,6776,646,0.1171

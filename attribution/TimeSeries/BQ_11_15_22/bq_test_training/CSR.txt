@@ -1,0 +1,216 @@
+-----BEGIN CERTIFICATE-----
+MIIE6DCCA9CgAwIBAgIFAi8kjmEwDQYJKoZIhvcNAQELBQAwgZkxGDAWBgNVBAoM
+D05vcnJpcyBBbmRlcnNvbjEVMBMGA1UEAwwMbWRub3JyaXMuY29tMREwDwYDVQQI
+DAhJbGxpbm9pczELMAkGA1UEBhMCVVMxDjAMBgNVBAsMBU93bmVyMREwDwYDVQQH
+DAhTeWNhbW9yZTEjMCEGCSqGSIb3DQEJARYUbWF0dGhld0BtZG5vcnJpcy5jb20w
+HhcNMjIxMTE3MTYxMDUyWhcNMjMxMTE3MTYxMDUyWjCBmTEYMBYGA1UECgwPTm9y
+cmlzIEFuZGVyc29uMRUwEwYDVQQDDAxtZG5vcnJpcy5jb20xETAPBgNVBAgMCEls
+bGlub2lzMQswCQYDVQQGEwJVUzEOMAwGA1UECwwFT3duZXIxETAPBgNVBAcMCFN5
+Y2Ftb3JlMSMwIQYJKoZIhvcNAQkBFhRtYXR0aGV3QG1kbm9ycmlzLmNvbTCCASIw
+DQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBAJ1KiIY3zqJp/057uW26x4jS8urd
+UmaBnHRhQYhIwUJa8KYyw4TmkTgDChPZwlpjAgUq2OVvCsWU+C1W4aZnXBmy0VmG
+a49ZNMWtr4WcmHR8yAfxceMwFZyiCsOFfZfZ56t0Ew65iIpIsS2vCo/k1q1A+7Cx
+6ZF0fQZEKFL5nof20aEXRt59MJ8ylr8e6RE8CE68WJNfrYPbpm/8LxkUwBnBlAPo
+fI1y3V50gaxzR55ZAfpI/Y0lQrpA9ziljaQQfcXyPoYlS+ANtvePe8/H5tk/mbko
+bQ0i2m7FY1e01i/+uikn/R5pbqyS694o6RZRtlAIRt0438HfVHGFU+9wvwsCAwEA
+AaOCATMwggEvMB0GA1UdDgQWBBQjpS99Fjh/yOK3hWgsHV7D/oJiPTAJBgNVHRME
+AjAAMIHKBgNVHSMEgcIwgb+AFCOlL30WOH/I4reFaCwdXsP+gmI9oYGfpIGcMIGZ
+MRgwFgYDVQQKDA9Ob3JyaXMgQW5kZXJzb24xFTATBgNVBAMMDG1kbm9ycmlzLmNv
+bTERMA8GA1UECAwISWxsaW5vaXMxCzAJBgNVBAYTAlVTMQ4wDAYDVQQLDAVPd25l
+cjERMA8GA1UEBwwIU3ljYW1vcmUxIzAhBgkqhkiG9w0BCQEWFG1hdHRoZXdAbWRu
+b3JyaXMuY29tggUCLySOYTAdBgNVHSUEFjAUBggrBgEFBQcDAQYIKwYBBQUHAwIw
+FwYDVR0RBBAwDoIMbWRub3JyaXMuY29tMA0GCSqGSIb3DQEBCwUAA4IBAQBRSq31
+CMW5ocBFGHlZcaZMUdQ6qw74Q8ZeNnAi10SoW5bSnKKb6GtUFz8kpYCGLUeBddP9
++9ao0VpJMBZuVS/OXtO5hs+ACO26lC5537fIaopTe4SrAwRLIa6boExIQWWA9AL0
+ylqfddZqFYDcbHnKZ22+YfuxUr3yCA6jbJBr9X19U86m9R6j7nW3T81VzHdNHMgU
+7rsWUfbCXCURcVIGqKzzCRD+T9o/cPpDy+0L61tKXda7SAQcolYPmFyU0pSFu09J
+gwU4jb+n3W1FRavxbGfu/LMfiF0Ua/eK83pNeePAUW3y+RbGdWKwZOFnLV2XxmG0
+Vd6haIalGQnSRaQR
+-----END CERTIFICATE-----
+
+
+Certificate:
+    Data:
+        Version: 3 (0x2)
+        Serial Number: 9380859489 (0x22f248e61)
+    Signature Algorithm: sha256WithRSAEncryption
+        Issuer: O = Norris Anderson, CN = mdnorris.com, ST = Illinois, C = US, OU = Owner, L = Sycamore, emailAddress = matthew@mdnorris.com
+        Validity
+            Not Before: Nov 17 16:10:52 2022 GMT
+            Not After : Nov 17 16:10:52 2023 GMT
+        Subject: O = Norris Anderson, CN = mdnorris.com, ST = Illinois, C = US, OU = Owner, L = Sycamore, emailAddress = matthew@mdnorris.com
+        Subject Public Key Info:
+            Public Key Algorithm: rsaEncryption
+                Public-Key: (2048 bit)
+                Modulus:
+                    00:9d:4a:88:86:37:ce:a2:69:ff:4e:7b:b9:6d:ba:
+                    c7:88:d2:f2:ea:dd:52:66:81:9c:74:61:41:88:48:
+                    c1:42:5a:f0:a6:32:c3:84:e6:91:38:03:0a:13:d9:
+                    c2:5a:63:02:05:2a:d8:e5:6f:0a:c5:94:f8:2d:56:
+                    e1:a6:67:5c:19:b2:d1:59:86:6b:8f:59:34:c5:ad:
+                    af:85:9c:98:74:7c:c8:07:f1:71:e3:30:15:9c:a2:
+                    0a:c3:85:7d:97:d9:e7:ab:74:13:0e:b9:88:8a:48:
+                    b1:2d:af:0a:8f:e4:d6:ad:40:fb:b0:b1:e9:91:74:
+                    7d:06:44:28:52:f9:9e:87:f6:d1:a1:17:46:de:7d:
+                    30:9f:32:96:bf:1e:e9:11:3c:08:4e:bc:58:93:5f:
+                    ad:83:db:a6:6f:fc:2f:19:14:c0:19:c1:94:03:e8:
+                    7c:8d:72:dd:5e:74:81:ac:73:47:9e:59:01:fa:48:
+                    fd:8d:25:42:ba:40:f7:38:a5:8d:a4:10:7d:c5:f2:
+                    3e:86:25:4b:e0:0d:b6:f7:8f:7b:cf:c7:e6:d9:3f:
+                    99:b9:28:6d:0d:22:da:6e:c5:63:57:b4:d6:2f:fe:
+                    ba:29:27:fd:1e:69:6e:ac:92:eb:de:28:e9:16:51:
+                    b6:50:08:46:dd:38:df:c1:df:54:71:85:53:ef:70:
+                    bf:0b
+                Exponent: 65537 (0x10001)
+        X509v3 extensions:
+            X509v3 Subject Key Identifier: 
+                23:A5:2F:7D:16:38:7F:C8:E2:B7:85:68:2C:1D:5E:C3:FE:82:62:3D
+            X509v3 Basic Constraints: 
+                CA:FALSE
+            X509v3 Authority Key Identifier: 
+                keyid:23:A5:2F:7D:16:38:7F:C8:E2:B7:85:68:2C:1D:5E:C3:FE:82:62:3D
+                DirName:/O=Norris Anderson/CN=mdnorris.com/ST=Illinois/C=US/OU=Owner/L=Sycamore/emailAddress=matthew@mdnorris.com
+                serial:02:2F:24:8E:61
+
+            X509v3 Extended Key Usage: 
+                TLS Web Server Authentication, TLS Web Client Authentication
+            X509v3 Subject Alternative Name: 
+                DNS:mdnorris.com
+    Signature Algorithm: sha256WithRSAEncryption
+         51:4a:ad:f5:08:c5:b9:a1:c0:45:18:79:59:71:a6:4c:51:d4:
+         3a:ab:0e:f8:43:c6:5e:36:70:22:d7:44:a8:5b:96:d2:9c:a2:
+         9b:e8:6b:54:17:3f:24:a5:80:86:2d:47:81:75:d3:fd:fb:d6:
+         a8:d1:5a:49:30:16:6e:55:2f:ce:5e:d3:b9:86:cf:80:08:ed:
+         ba:94:2e:79:df:b7:c8:6a:8a:53:7b:84:ab:03:04:4b:21:ae:
+         9b:a0:4c:48:41:65:80:f4:02:f4:ca:5a:9f:75:d6:6a:15:80:
+         dc:6c:79:ca:67:6d:be:61:fb:b1:52:bd:f2:08:0e:a3:6c:90:
+         6b:f5:7d:7d:53:ce:a6:f5:1e:a3:ee:75:b7:4f:cd:55:cc:77:
+         4d:1c:c8:14:ee:bb:16:51:f6:c2:5c:25:11:71:52:06:a8:ac:
+         f3:09:10:fe:4f:da:3f:70:fa:43:cb:ed:0b:eb:5b:4a:5d:d6:
+         bb:48:04:1c:a2:56:0f:98:5c:94:d2:94:85:bb:4f:49:83:05:
+         38:8d:bf:a7:dd:6d:45:45:ab:f1:6c:67:ee:fc:b3:1f:88:5d:
+         14:6b:f7:8a:f3:7a:4d:79:e3:c0:51:6d:f2:f9:16:c6:75:62:
+         b0:64:e1:67:2d:5d:97:c6:61:b4:55:de:a1:68:86:a5:19:09:
+         d2:45:a4:11
+
+
+-----BEGIN RSA PRIVATE KEY-----
+MIIEogIBAAKCAQEAnUqIhjfOomn/Tnu5bbrHiNLy6t1SZoGcdGFBiEjBQlrwpjLD
+hOaROAMKE9nCWmMCBSrY5W8KxZT4LVbhpmdcGbLRWYZrj1k0xa2vhZyYdHzIB/Fx
+4zAVnKIKw4V9l9nnq3QTDrmIikixLa8Kj+TWrUD7sLHpkXR9BkQoUvmeh/bRoRdG
+3n0wnzKWvx7pETwITrxYk1+tg9umb/wvGRTAGcGUA+h8jXLdXnSBrHNHnlkB+kj9
+jSVCukD3OKWNpBB9xfI+hiVL4A229497z8fm2T+ZuShtDSLabsVjV7TWL/66KSf9
+HmlurJLr3ijpFlG2UAhG3Tjfwd9UcYVT73C/CwIDAQABAoIBAGpX2wgLsSwDyDYy
+1kKG9qLeJJiAPFbLqJDStHDE58zKGUv0pFY1YNdizqxvHMTpjZMazfwI4FqHhmd5
+ByTvWsiRKpOBmzUW1eQUssf+AOE5ADDGn/4/I018DRT2KtzA2a4E02GwNM1xqkC9
+yMFSsYX/mmtzTfwmquTSrgSzeehn+x/cr3aAuc1F7af0L0lfiAvydjriV6dhB5Ge
+JokgUi4UIShO+CVMNuVT80o4KjGWmpL0rb+3Ee2hNLO7Sb0f09iWJjiqA+1AY4qn
+j64TRvM34mEYWcGsnu7Zgxw6/I48yHjboqf5VZ4w4BUqYsOpXCKpRfUsp0wDM5ks
+cHE9YtECgYEAzB7skmHHsP6LzaWtLWzF88M+5N1glm+of6WE8mm8U76XlO6A5i9x
+qZEcli5VDZHTfhtx/oxDIVPS8WF12Ygiqfy4IaUYQLyxB5j65ROyUIwRdV1i1Gup
+bvNZgIffvEoDoJzQtv4zkT/FkS/bgADDe+uYslh7YHbET8vJVWpM6AkCgYEAxUSl
+4D7jMpm5yGC8LozPDBVtb3lUCQMVJJd2cdNmBCYcvcDw6aZd/VbZ8/M4xcC84wNL
+ibXAmuYu9s6+zPTJyWg1nnLkyxSL46gTp17bawNGJ/VC5t19ahk6eeLefDhraZH0
+xL6NM5zA4nLZHQn/6NLuJA4HrFfjdQf/6wFTK3MCgYBodpsT/z63ck4SHOwYB0b3
+jcCuWC2KT/KoAQmdFkfvg+cHrVgCdd1xrnY21ddpbmwSafFZGGdysveN2Rb7ERTM
+ci256kgTOX5QKRaeDgp/9m8o5XYiyEaaJah0gxUZw7c/h4G5ZTb26vAtcZSgWcOx
+s80d2PKrV5z4SY7sS864IQKBgHd998R4E4OJHsJD5nmEDb7SE/IcWk0DMwFxRev5
+E6ibtXkzsDq37eMRgwCEafVPpJsWWeFW2Q57NCOIZIceGEUJ/MC38+MX1QzXuN//
+U4Xk+9Akfpv9uoRUN9mxFPfF7TqLkOrESh/jaetBikZO0lcjveDVJsy8iClR6TFf
+IhQFAoGAfDwwPPHgvVPVS3j1joGpeDMIDCt89LtHt6OVXIOgqKXe25Nc8kSkCiGX
+zGRa0UhPRMbGGeekBSvOQ2vdsnhtCPH6yo5xPJwab5NqHngbOFQirFJ94NpWr+gQ
+kGXJZsCt43S6XcgGBDoMwrJvBAuirC983Jw7PxYDflame8YECIM=
+-----END RSA PRIVATE KEY-----
+
+
+
+Private-Key: (2048 bit)
+modulus:
+    00:9d:4a:88:86:37:ce:a2:69:ff:4e:7b:b9:6d:ba:
+    c7:88:d2:f2:ea:dd:52:66:81:9c:74:61:41:88:48:
+    c1:42:5a:f0:a6:32:c3:84:e6:91:38:03:0a:13:d9:
+    c2:5a:63:02:05:2a:d8:e5:6f:0a:c5:94:f8:2d:56:
+    e1:a6:67:5c:19:b2:d1:59:86:6b:8f:59:34:c5:ad:
+    af:85:9c:98:74:7c:c8:07:f1:71:e3:30:15:9c:a2:
+    0a:c3:85:7d:97:d9:e7:ab:74:13:0e:b9:88:8a:48:
+    b1:2d:af:0a:8f:e4:d6:ad:40:fb:b0:b1:e9:91:74:
+    7d:06:44:28:52:f9:9e:87:f6:d1:a1:17:46:de:7d:
+    30:9f:32:96:bf:1e:e9:11:3c:08:4e:bc:58:93:5f:
+    ad:83:db:a6:6f:fc:2f:19:14:c0:19:c1:94:03:e8:
+    7c:8d:72:dd:5e:74:81:ac:73:47:9e:59:01:fa:48:
+    fd:8d:25:42:ba:40:f7:38:a5:8d:a4:10:7d:c5:f2:
+    3e:86:25:4b:e0:0d:b6:f7:8f:7b:cf:c7:e6:d9:3f:
+    99:b9:28:6d:0d:22:da:6e:c5:63:57:b4:d6:2f:fe:
+    ba:29:27:fd:1e:69:6e:ac:92:eb:de:28:e9:16:51:
+    b6:50:08:46:dd:38:df:c1:df:54:71:85:53:ef:70:
+    bf:0b
+publicExponent: 65537 (0x10001)
+privateExponent:
+    6a:57:db:08:0b:b1:2c:03:c8:36:32:d6:42:86:f6:
+    a2:de:24:98:80:3c:56:cb:a8:90:d2:b4:70:c4:e7:
+    cc:ca:19:4b:f4:a4:56:35:60:d7:62:ce:ac:6f:1c:
+    c4:e9:8d:93:1a:cd:fc:08:e0:5a:87:86:67:79:07:
+    24:ef:5a:c8:91:2a:93:81:9b:35:16:d5:e4:14:b2:
+    c7:fe:00:e1:39:00:30:c6:9f:fe:3f:23:4d:7c:0d:
+    14:f6:2a:dc:c0:d9:ae:04:d3:61:b0:34:cd:71:aa:
+    40:bd:c8:c1:52:b1:85:ff:9a:6b:73:4d:fc:26:aa:
+    e4:d2:ae:04:b3:79:e8:67:fb:1f:dc:af:76:80:b9:
+    cd:45:ed:a7:f4:2f:49:5f:88:0b:f2:76:3a:e2:57:
+    a7:61:07:91:9e:26:89:20:52:2e:14:21:28:4e:f8:
+    25:4c:36:e5:53:f3:4a:38:2a:31:96:9a:92:f4:ad:
+    bf:b7:11:ed:a1:34:b3:bb:49:bd:1f:d3:d8:96:26:
+    38:aa:03:ed:40:63:8a:a7:8f:ae:13:46:f3:37:e2:
+    61:18:59:c1:ac:9e:ee:d9:83:1c:3a:fc:8e:3c:c8:
+    78:db:a2:a7:f9:55:9e:30:e0:15:2a:62:c3:a9:5c:
+    22:a9:45:f5:2c:a7:4c:03:33:99:2c:70:71:3d:62:
+    d1
+prime1:
+    00:cc:1e:ec:92:61:c7:b0:fe:8b:cd:a5:ad:2d:6c:
+    c5:f3:c3:3e:e4:dd:60:96:6f:a8:7f:a5:84:f2:69:
+    bc:53:be:97:94:ee:80:e6:2f:71:a9:91:1c:96:2e:
+    55:0d:91:d3:7e:1b:71:fe:8c:43:21:53:d2:f1:61:
+    75:d9:88:22:a9:fc:b8:21:a5:18:40:bc:b1:07:98:
+    fa:e5:13:b2:50:8c:11:75:5d:62:d4:6b:a9:6e:f3:
+    59:80:87:df:bc:4a:03:a0:9c:d0:b6:fe:33:91:3f:
+    c5:91:2f:db:80:00:c3:7b:eb:98:b2:58:7b:60:76:
+    c4:4f:cb:c9:55:6a:4c:e8:09
+prime2:
+    00:c5:44:a5:e0:3e:e3:32:99:b9:c8:60:bc:2e:8c:
+    cf:0c:15:6d:6f:79:54:09:03:15:24:97:76:71:d3:
+    66:04:26:1c:bd:c0:f0:e9:a6:5d:fd:56:d9:f3:f3:
+    38:c5:c0:bc:e3:03:4b:89:b5:c0:9a:e6:2e:f6:ce:
+    be:cc:f4:c9:c9:68:35:9e:72:e4:cb:14:8b:e3:a8:
+    13:a7:5e:db:6b:03:46:27:f5:42:e6:dd:7d:6a:19:
+    3a:79:e2:de:7c:38:6b:69:91:f4:c4:be:8d:33:9c:
+    c0:e2:72:d9:1d:09:ff:e8:d2:ee:24:0e:07:ac:57:
+    e3:75:07:ff:eb:01:53:2b:73
+exponent1:
+    68:76:9b:13:ff:3e:b7:72:4e:12:1c:ec:18:07:46:
+    f7:8d:c0:ae:58:2d:8a:4f:f2:a8:01:09:9d:16:47:
+    ef:83:e7:07:ad:58:02:75:dd:71:ae:76:36:d5:d7:
+    69:6e:6c:12:69:f1:59:18:67:72:b2:f7:8d:d9:16:
+    fb:11:14:cc:72:2d:b9:ea:48:13:39:7e:50:29:16:
+    9e:0e:0a:7f:f6:6f:28:e5:76:22:c8:46:9a:25:a8:
+    74:83:15:19:c3:b7:3f:87:81:b9:65:36:f6:ea:f0:
+    2d:71:94:a0:59:c3:b1:b3:cd:1d:d8:f2:ab:57:9c:
+    f8:49:8e:ec:4b:ce:b8:21
+exponent2:
+    77:7d:f7:c4:78:13:83:89:1e:c2:43:e6:79:84:0d:
+    be:d2:13:f2:1c:5a:4d:03:33:01:71:45:eb:f9:13:
+    a8:9b:b5:79:33:b0:3a:b7:ed:e3:11:83:00:84:69:
+    f5:4f:a4:9b:16:59:e1:56:d9:0e:7b:34:23:88:64:
+    87:1e:18:45:09:fc:c0:b7:f3:e3:17:d5:0c:d7:b8:
+    df:ff:53:85:e4:fb:d0:24:7e:9b:fd:ba:84:54:37:
+    d9:b1:14:f7:c5:ed:3a:8b:90:ea:c4:4a:1f:e3:69:
+    eb:41:8a:46:4e:d2:57:23:bd:e0:d5:26:cc:bc:88:
+    29:51:e9:31:5f:22:14:05
+coefficient:
+    7c:3c:30:3c:f1:e0:bd:53:d5:4b:78:f5:8e:81:a9:
+    78:33:08:0c:2b:7c:f4:bb:47:b7:a3:95:5c:83:a0:
+    a8:a5:de:db:93:5c:f2:44:a4:0a:21:97:cc:64:5a:
+    d1:48:4f:44:c6:c6:19:e7:a4:05:2b:ce:43:6b:dd:
+    b2:78:6d:08:f1:fa:ca:8e:71:3c:9c:1a:6f:93:6a:
+    1e:78:1b:38:54:22:ac:52:7d:e0:da:56:af:e8:10:
+    90:65:c9:66:c0:ad:e3:74:ba:5d:c8:06:04:3a:0c:
+    c2:b2:6f:04:0b:a2:ac:2f:7c:dc:9c:3b:3f:16:03:
+    7e:56:a6:7b:c6:04:08:83
