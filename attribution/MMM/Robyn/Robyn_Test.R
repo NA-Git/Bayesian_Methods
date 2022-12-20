@@ -84,8 +84,8 @@ InputCollect <- robyn_inputs(
   # paid_media_vars are mandatory like paid_media_spends, and must have same order as
   # paid_media_spends. Use media exposure metrics like impressions,
   # GRP etc. If not applicable, use spend instead.
-  , organic_vars = c('newsletter') # marketing activity without media spend
-  , factor_vars = c('events')
+  , organic_vars = 'newsletter' # marketing activity without media spend
+  , factor_vars = 'events'
   # organic_vars are factorial
   # prophet pulls in your date range from the date variable, but the window start
   # and window end require you to put in dates that are in between and smaller
@@ -116,39 +116,65 @@ hyper_limits()
 # All variables in paid_media_spends and organic_vars require hyperparameter and will be
 # transformed by adstock & saturation.
 
+# Weibull PDF
+
 hyperparameters <- list(
-  facebook_S_alphas = c(0.25, 9)
-  , facebook_S_gammas = c(0.1, 1)
-  , facebook_S_shapes = c(1, 15)
-  , facebook_S_scales = c(0, 0.9)
+  facebook_S_alphas = c(.5, 3)
+  , facebook_S_gammas = c(0.3, 1)
+  , facebook_S_shapes = c(.0001, 10)
+  , facebook_S_scales = c(0, 0.1)
 
-  , newsletter_alphas = c(0.25, 9)
-  , newsletter_gammas = c(0.1, 1)
-  , newsletter_shapes = c(1, 15)
-  , newsletter_scales = c(0, 0.9)
+  , newsletter_alphas = c(.5, 3)
+  , newsletter_gammas = c(0.3, 1)
+  , newsletter_shapes = c(.0001, 10)
+  , newsletter_scales = c(0, 0.1)
 
-  , ooh_S_alphas = c(0.25, 9)
-  , ooh_S_gammas = c(0.1, 1)
-  , ooh_S_shapes = c(1, 15)
-  , ooh_S_scales = c(0, 0.9)
+  , ooh_S_alphas = c(.5, 3)
+  , ooh_S_gammas = c(0.3, 1)
+  , ooh_S_shapes = c(.0001, 10)
+  , ooh_S_scales = c(0, 0.1)
 
-  , print_S_alphas = c(0.25, 9)
-  , print_S_gammas = c(0.1, 1)
-  , print_S_shapes = c(1, 15)
-  , print_S_scales= c(0, 0.9)
+  , print_S_alphas = c(.5, 3)
+  , print_S_gammas = c(0.3, 1)
+  , print_S_shapes = c(.0001, 10)
+  , print_S_scales= c(0, 0.1)
 
-  , search_S_alphas = c(0.25, 9)
-  , search_S_gammas = c(0.1, 1)
-  , search_S_shapes = c(1, 15)
-  , search_S_scales = c(0, 0.9)
+  , search_S_alphas = c(.5, 3)
+  , search_S_gammas = c(0.3, 1)
+  , search_S_shapes = c(.0001, 10)
+  , search_S_scales = c(0, 0.1)
 
-  , tv_S_alphas = c(0.25, 9)
-  , tv_S_gammas = c(0.1, 1)
-  , tv_S_shapes = c(1, 15)
-  , tv_S_scales = c(0, 0.9)
+  , tv_S_alphas = c(.5, 3)
+  , tv_S_gammas = c(0.3, 1)
+  , tv_S_shapes = c(.0001, 10)
+  , tv_S_scales = c(0, 0.1)
 
   , train_size = c(0.5, 0.8)
 )
+
+# Geometric Distribution
+
+# hyperparameters <- list(
+#   facebook_S_alphas = c(0.1, 9),
+#   facebook_S_gammas = c(0.1, 1),
+#   facebook_S_thetas = c(0, 0.9),
+#   print_S_alphas = c(0.1, 9),
+#   print_S_gammas = c(0.1, 1),
+#   print_S_thetas = c(0, 0.9),
+#   tv_S_alphas = c(0.1, 9),
+#   tv_S_gammas = c(0.1, 1),
+#   tv_S_thetas = c(0, 0.9),
+#   search_S_alphas = c(0.1, 9),
+#   search_S_gammas = c(0.1, 1),
+#   search_S_thetas = c(0, 0.9),
+#   ooh_S_alphas = c(0.1, 9),
+#   ooh_S_gammas = c(0.1, 1),
+#   ooh_S_thetas = c(0, 0.9),
+#   newsletter_alphas = c(0.1, 9),
+#   newsletter_gammas = c(0.1, 1),
+#   newsletter_thetas = c(0, 0.9),
+#   train_size = c(0.5, 0.8)
+# )
 
 #### 2a-3: Third, add hyperparameters into robyn_inputs()
 InputCollect <- robyn_inputs(InputCollect = InputCollect,
@@ -207,13 +233,12 @@ print(InputCollect)
 #### Step 3: Build initial model
 
 ## Run all trials and iterations. Use ?robyn_run to check parameter definition
-OutputModels <- robyn_run(
+OtputModels <- robyn_run(
   InputCollect = InputCollect # feed in all model specification
   , cores = parallel::detectCores() # default to all but one core?
-  # , seed = 42
-  , iterations = 3000 # try to increase to converge faster
-  , trials = 10 # try to increase to converge faster
-  # , outputs = FALSE # outputs = FALSE disables direct model output
+  , iterations = 2000 # can be increased if model is close to converging but
+  # does not
+  , trials = 10 # same as above
   , ts_validation = TRUE, # 3-way-split time series for NRMSE validation.
 )
 print(OutputModels)
@@ -249,7 +274,7 @@ print(OutputCollect)
 #### Step 4: Select and save the initial model
 ## Compare all model one-pagers and select one that mostly reflects your business reality
 print(OutputCollect)
-select_model <- "4_117_2" # select one from above
+select_model <- "1_172_8" # select one from above
 
 ExportedModel <- robyn_write(InputCollect, OutputCollect, select_model)
 print(ExportedModel)
@@ -271,8 +296,7 @@ AllocatorCollect1 <- robyn_allocator(
   , OutputCollect = OutputCollect
   , select_model = select_model
   , scenario = "max_historical_response"
-  , channel_constr_low = 0.7
-  , channel_constr_up = c(1.2)
+  , channel_constr_up = c(1.2, 1.5, 1.5, 1.5, 1.5)
   , export = TRUE
   , date_min = "2016-11-21"
   , date_max = "2018-08-20"
@@ -288,10 +312,10 @@ AllocatorCollect2 <- robyn_allocator(
   , OutputCollect = OutputCollect
   , select_model = select_model
   , scenario = "max_response_expected_spend"
-  , channel_constr_low = c(0.7)
-  , channel_constr_up = c(1.5)
-  , expected_spend = 1000000 # Total spend to be simulated
-  , expected_spend_days = 7 # Duration of expected_spend in days
+  , channel_constr_low = c(0.7, 0.7, 0.7, 0.7, 0.7),
+  , channel_constr_up = c(1.2, 1.5, 1.5, 1.5, 1.5),
+  , expected_spend = 1000000, # Total spend to be simulated
+  , expected_spend_days = 7, # Duration of expected_spend in days
   , export = TRUE
 )
 print(AllocatorCollect2)
@@ -303,20 +327,26 @@ plot(AllocatorCollect2)
 
 ## QA optimal response
 # Pick any media variable: InputCollect$all_media
-select_media <- "coupon_S"
+select_media <- "ooh_S"
 # For paid_media_spends set metric_value as your optimal spend
-metric_value <- AllocatorCollect1$dt_optimOut[channels == select_media, optmSpendUnit]
+metric_value <- AllocatorCollect1$dt_optimOut$optmSpendUnit[
+  AllocatorCollect1$dt_optimOut$channels == select_media
+]; metric_value
 # # For paid_media_vars and organic_vars, manually pick a value
 # metric_value <- 10000
 
 if (TRUE) {
-  optimal_response_allocator <- AllocatorCollect1$dt_optimOut[
-    channels == select_media, optmResponseUnit]
+  optimal_response_allocator <- AllocatorCollect1$dt_optimOut$optmResponseUnit[
+    AllocatorCollect1$dt_optimOut$channels == select_media
+  ]
   optimal_response <- robyn_response(
-    robyn_object = robyn_object,
+    InputCollect = InputCollect,
+    OutputCollect = OutputCollect,
+    select_model = select_model,
     select_build = 0,
     media_metric = select_media,
-    metric_value = metric_value)
+    metric_value = metric_value
+  )
   plot(optimal_response$plot)
   if (length(optimal_response_allocator) > 0) {
     cat("QA if results from robyn_allocator and robyn_response agree: ")
@@ -336,47 +366,48 @@ if (TRUE) {
 ## 2, new variables are added
 
 # Run ?robyn_refresh to check parameter definition
-Robyn <- robyn_refresh(
-  robyn_object = robyn_object
-  , dt_input = df
-  , dt_holidays = dt_prophet_holidays
-  , refresh_steps = 4
-  , refresh_mode = "manual"
-  , refresh_iters = 1000 # 1k is estimation. Use refresh_mode = "manual" to try out.
-  , refresh_trials = 3
-  , plot_pareto = TRUE
-  , clusters = FALSE
-)
-
-## Besides plots: there're 4 csv output saved in the folder for further usage
-# report_hyperparameters.csv, hyperparameters of all selected model for reporting
-# report_aggregated.csv, aggregated decomposition per independent variable
-# report_media_transform_matrix.csv, all media transformation vectors
-# report_alldecomp_matrix.csv,all decomposition vectors of independent variables
-
-# Export this refreshed model you wish to export
-last_refresh_num <- sum(grepl('listRefresh', names(Robyn))) + 1 # Pick any refresh.
-# Here's the final refresh using the model recommended by least combined normalized nrmse
-# and decomp.rssd
-ExportedRefreshModel <- robyn_save(
-  robyn_object = robyn_object
-  , select_model = Robyn[[last_refresh_num]]$OutputCollect$selectID
-  , InputCollect = Robyn[[last_refresh_num]]$InputCollect
-  , OutputCollect = Robyn[[last_refresh_num]]$OutputCollect
-)
+# Robyn <- robyn_refresh(
+#   robyn_object = robyn_object
+#   , dt_input = df
+#   , dt_holidays = dt_prophet_holidays
+#   , refresh_steps = 4
+#   , refresh_mode = "manual"
+#   , refresh_iters = 1000 # 1k is estimation. Use refresh_mode = "manual" to try out.
+#   , refresh_trials = 3
+#   , plot_pareto = TRUE
+#   , clusters = FALSE
+# )
+#
+# ## Besides plots: there're 4 csv output saved in the folder for further usage
+# # report_hyperparameters.csv, hyperparameters of all selected model for reporting
+# # report_aggregated.csv, aggregated decomposition per independent variable
+# # report_media_transform_matrix.csv, all media transformation vectors
+# # report_alldecomp_matrix.csv,all decomposition vectors of independent variables
+#
+# # Export this refreshed model you wish to export
+# last_refresh_num <- sum(grepl('listRefresh', names(Robyn))) + 1 # Pick any refresh.
+# # Here's the final refresh using the model recommended by least combined normalized nrmse
+# # and decomp.rssd
+# ExportedRefreshModel <- robyn_save(
+#   robyn_object = robyn_object
+#   , select_model = Robyn[[last_refresh_num]]$OutputCollect$selectID
+#   , InputCollect = Robyn[[last_refresh_num]]$InputCollect
+#   , OutputCollect = Robyn[[last_refresh_num]]$OutputCollect
+# )
 
 ################################################################
 #### Step 7: Get budget allocation recommendation based on selected refresh runs
 
 # Run ?robyn_allocator to check parameter definition
 AllocatorCollect <- robyn_allocator(
-  robyn_object = robyn_object
-  #, select_build = 1 # Use third refresh model
-  , scenario = "max_response_expected_spend"
-  , channel_constr_low = c(0.7, 0.7, 0.7, 0.7, 0.7)
-  , channel_constr_up = c(1.2, 1.5, 1.5, 1.5, 1.5)
-  , expected_spend = 2000000 # Total spend to be simulated
-  , expected_spend_days = 14 # Duration of expected_spend in days
+  InputCollect = InputCollect,
+  OutputCollect = OutputCollect,
+  select_model = select_model,
+  scenario = "max_response_expected_spend",
+  channel_constr_low = c(0.7, 0.7, 0.7, 0.7, 0.7),
+  channel_constr_up = c(1.2, 1.5, 1.5, 1.5, 1.5),
+  expected_spend = 2000000, # Total spend to be simulated
+  expected_spend_days = 14 # Duration of expected_spend in days
 )
 print(AllocatorCollect)
 plot(AllocatorCollect)
@@ -384,37 +415,39 @@ plot(AllocatorCollect)
 ################################################################
 #### Step 8: get marginal returns
 
-###??? Can take hours to run
-
-## how to get marginal ROI of next 1000$ from the 80k spend level for search channel
+## Example of how to get marginal ROI of next 1000$ from the 80k spend level for search channel
 
 # Run ?robyn_response to check parameter definition
 
-## -------------------------------- NOTE v3.6.0 CHANGE !!! --------------------------- ##
-## The robyn_response() function can now output response for spends and exposures (imps,
-## GRP, circular_S sendings etc.) as well as plotting individual saturation curves. New
-## argument names "media_metric" and "metric_value" instead "paid_media_var" and "spend"
+## -------------------------------- NOTE v3.6.0 CHANGE !!! ---------------------------------- ##
+## The robyn_response() function can now output response for both spends and exposures (imps,
+## GRP, newsletter sendings etc.) as well as plotting individual saturation curves. New
+## argument names "media_metric" and "metric_value" instead of "paid_media_var" and "spend"
 ## are now used to accommodate this change. Also the returned output is a list now and
 ## contains also the plot.
-## ------------------------------------------------------------------------------------##
+## ------------------------------------------------------------------------------------------ ##
 
 # Get response for 80k from result saved in robyn_object
-Spend1 <- 60000
+Spend1 <- 600000
 Response1 <- robyn_response(
-  robyn_object = robyn_object
-  #, select_build = 1 # 2 means the second refresh model. 0 means the initial model
-  , media_metric = "display_S"
-  , metric_value = Spend1)
+  InputCollect = InputCollect,
+  OutputCollect = OutputCollect,
+  select_model = select_model,
+  media_metric = 'tv_S',
+  metric_value = Spend1
+)
 Response1$response / Spend1 # ROI for search 80k
 Response1$plot
 
-# Get response for 81k
-Spend2 <- Spend1 + 1000
+# Get response for +10%
+Spend2 <- Spend1 * 1.1
 Response2 <- robyn_response(
-  robyn_object = robyn_object
-  #, select_build = 1
-  , media_metric = "influence_S"
-  , metric_value = Spend2)
+  InputCollect = InputCollect,
+  OutputCollect = OutputCollect,
+  select_model = select_model,
+  media_metric = "ooh_S",
+  metric_value = Spend2
+)
 Response2$response / Spend2 # ROI for search 81k
 Response2$plot
 
@@ -424,43 +457,31 @@ Response2$plot
 ## Example of getting paid media exposure response curves
 imps <- 50000000
 response_imps <- robyn_response(
-  robyn_object = robyn_object
-  #, select_build = 1
-  , media_metric = "app_S"
-  , metric_value = imps)
+  InputCollect = InputCollect,
+  OutputCollect = OutputCollect,
+  select_model = select_model,
+  media_metric = "tv_S",
+  metric_value = imps
+)
 response_imps$response / imps * 1000
 response_imps$plot
 
 ## Example of getting organic media exposure response curves
 sendings <- 30000
 response_sending <- robyn_response(
-  robyn_object = robyn_object
-  #, select_build = 1
-  , media_metric = "circular_S"
-  , metric_value = sendings)
+  InputCollect = InputCollect,
+  OutputCollect = OutputCollect,
+  select_model = select_model,
+  media_metric = "newsletter",
+  metric_value = sendings
+)
 response_sending$response / sendings * 1000
 response_sending$plot
 
 ################################################################
 #### Optional: get old model results
 
-# Get old hyperparameters and select model
-# dt_hyper_fixed <-
-# data.table::fread("~/Desktop/2022-03-31 12.32 rf4/pareto_hyperparameters.csv")
-# select_model <- "1_25_9"
-# dt_hyper_fixed <- dt_hyper_fixed[solID == select_model]
-
-# OutputCollectFixed <- robyn_run(
-# InputCollect must be provided by robyn_inputs with same data and parameters as before
-#   InputCollect = InputCollect
-#   , plot_folder = robyn_object
-#   , dt_hyper_fixed = dt_hyper_fixed)
-#
-# # Save Robyn object for further refresh
-# robyn_save(robyn_object = robyn_object
-#            , select_model = select_model
-#            , InputCollect = InputCollect
-#            , OutputCollect = OutputCollectFixed)
+## Has been improved, but not incredibly useful
 
 ########################################################################################
 # Glossary
