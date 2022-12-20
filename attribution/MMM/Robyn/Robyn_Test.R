@@ -48,7 +48,7 @@ use_condaenv("r-reticulate")
 setwd('C:/Users/norri/Desktop/')
 Sys.setenv(R_FUTURE_FORK_ENABLE = TRUE) # Force multicore when using RStudio
 options(future.fork.enable = TRUE)
-df <- read.csv('simulated_marketing_data.csv', fileEncoding = 'UTF-8-BOM')
+df <- read.csv('robyn_sim_weekly.csv', fileEncoding = 'UTF-8-BOM')
 
 data("dt_prophet_holidays")
 head(dt_prophet_holidays)
@@ -77,15 +77,15 @@ InputCollect <- robyn_inputs(
   , dep_var = "revenue" # there should be only one dependent variable
   , dep_var_type = "revenue" # "revenue" (ROI) or "conversion" (CPA)
   , prophet_vars = c("trend", "season", "holiday") # "trend","season", "holiday"
-  , prophet_country = "US" # input one country of dt_prophet_holidays
-  , context_vars = c('competitor_sales') # e.g. competitors, discount, unemployment etc
-  , paid_media_spends = c("tv_S", "radio_S", "paid_search_S"), # mandatory input
-  , paid_media_vars = c("tv_S", "radio_S", "paid_search_S"), # mandatory.
+  , prophet_country = "DE" # input one country of dt_prophet_holidays
+  , context_vars = c("competitor_sales_B", "events") # e.g. competitors, discount, unemployment etc
+  , paid_media_spends = c("tv_S", "ooh_S", "print_S", "facebook_S", "search_S")
+  , paid_media_vars = c("tv_S", "ooh_S","print_S","facebook_I","search_clicks_P")
   # paid_media_vars are mandatory like paid_media_spends, and must have same order as
   # paid_media_spends. Use media exposure metrics like impressions,
   # GRP etc. If not applicable, use spend instead.
-  # , organic_vars = c('newsletter') # marketing activity without media spend
-  # , factor_vars = c('events')
+  , organic_vars = c('newsletter') # marketing activity without media spend
+  , factor_vars = c('events')
   # organic_vars are factorial
   # prophet pulls in your date range from the date variable, but the window start
   # and window end require you to put in dates that are in between and smaller
@@ -115,58 +115,56 @@ hyper_limits()
 # All variables in paid_media_spends and organic_vars require hyperparameter and will be
 # transformed by adstock & saturation.
 
-# hyperparameters <- list(
-#   facebook_S_alphas = c(0.5, 7)
-#   , facebook_S_gammas = c(0.3, 1)
-#   , facebook_S_shapes = c(2.0001, 13)
-#   , facebook_S_scales = c(0, 0.75)
-#
-#   , newsletter_alphas = c(0.5, 7)
-#   , newsletter_gammas = c(0.3, 1)
-#   , newsletter_shapes = c(2.0001, 13)
-#   , newsletter_scales = c(0, 0.75)
-#
-#   , ooh_S_alphas = c(0.5, 7)
-#   , ooh_S_gammas = c(0.3, 1)
-#   , ooh_S_shapes = c(2.0001, 13)
-#   , ooh_S_scales = c(0, 0.75)
-#
-#   , print_S_alphas = c(0.5, 7)
-#   , print_S_gammas = c(0.3, 1)
-#   , print_S_shapes = c(2.0001, 13)
-#   , print_S_scales= c(0, 0.75)
-#
-#   , search_S_alphas = c(0.5, 7)
-#   , search_S_gammas = c(0.3, 1)
-#   , search_S_shapes = c(2.0001, 13)
-#   , search_S_scales = c(0, 0.75)
-#
-#   , tv_S_alphas = c(0.5, 7)
-#   , tv_S_gammas = c(0.3, 1)
-#   , tv_S_shapes = c(2.0001, 13)
-#   , tv_S_scales = c(0, 0.75)
-#
-#   , train_size = c(0.5, 0.8)
-# )
-
 hyperparameters <- list(
-  paid_search_S_alphas = c(0.5, 7)
-    , paid_search_S_gammas = c(0.3, 1)
-    , paid_search_S_shapes = c(2.0001, 13)
-    , paid_search_S_scales = c(0, 0.75)
+  facebook_S_alphas = c(0.5, 7)
+  , facebook_S_gammas = c(0.3, 1)
+  , facebook_S_shapes = c(2.0001, 13)
+  , facebook_S_scales = c(0, 0.75)
 
-    , radio_S_alphas = c(0.5, 7)
-    , radio_S_gammas = c(0.3, 1)
-    , radio_S_shapes = c(2.0001, 13)
-    , radio_S_scales = c(0, 0.75)
+  , newsletter_alphas = c(0.5, 7)
+  , newsletter_gammas = c(0.3, 1)
+  , newsletter_shapes = c(2.0001, 13)
+  , newsletter_scales = c(0, 0.75)
 
-    , tv_S_alphas = c(0.5, 7)
-    , tv_S_gammas = c(0.3, 1)
-    , tv_S_shapes = c(2.0001, 13)
-    , tv_S_scales = c(0, 0.75)
+  , ooh_S_alphas = c(0.5, 7)
+  , ooh_S_gammas = c(0.3, 1)
+  , ooh_S_shapes = c(2.0001, 13)
+  , ooh_S_scales = c(0, 0.75)
 
-    , train_size = c(0.5, 0.8)
+  , print_S_alphas = c(0.5, 7)
+  , print_S_gammas = c(0.3, 1)
+  , print_S_shapes = c(2.0001, 13)
+  , print_S_scales= c(0, 0.75)
+
+  , search_S_alphas = c(0.5, 7)
+  , search_S_gammas = c(0.3, 1)
+  , search_S_shapes = c(2.0001, 13)
+  , search_S_scales = c(0, 0.75)
+
+  , tv_S_alphas = c(0.5, 7)
+  , tv_S_gammas = c(0.3, 1)
+  , tv_S_shapes = c(2.0001, 13)
+  , tv_S_scales = c(0, 0.75)
+
+  , train_size = c(0.5, 0.8)
 )
+
+# hyperparameters <- list(
+#   paid_search_S_alphas = c(0.25, 9)
+#     , paid_search_S_gammas = c(0.1, 1)
+#     , paid_search_S_shapes = c(1, 15)
+#     , paid_search_S_scales = c(0, 0.9)
+#
+#     , radio_S_alphas = c(0.25, 9)
+#     , radio_S_gammas = c(0.1, 1)
+#     , radio_S_shapes = c(1, 15)
+#     , radio_S_scales = c(0, 0.9)
+#
+#     , tv_S_alphas = c(0.25, 9)
+#     , tv_S_gammas = c(0.1, 1)
+#     , tv_S_shapes = c(1, 15)
+#     , tv_S_scales = c(0, 0.9)
+#     , train_size = c(0.5, 0.8))
 
 #### 2a-3: Third, add hyperparameters into robyn_inputs()
 InputCollect <- robyn_inputs(InputCollect = InputCollect,
@@ -227,9 +225,9 @@ print(InputCollect)
 ## Run all trials and iterations. Use ?robyn_run to check parameter definition
 OutputModels <- robyn_run(
   InputCollect = InputCollect # feed in all model specification
-  , cores = parallel::detectCores() # default to all but one core?
-  , iterations = 2000 # try to increase to converge faster
-  , trials = 5 # try to increase to converge faster
+  , cores = 8 # default to all but one core?
+  , iterations = 2500 # try to increase to converge faster
+  , trials = 8 # try to increase to converge faster
   # , outputs = FALSE # outputs = FALSE disables direct model output
   , ts_validation = TRUE, # 3-way-split time series for NRMSE validation.
 )
