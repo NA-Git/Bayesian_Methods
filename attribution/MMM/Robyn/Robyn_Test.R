@@ -77,7 +77,7 @@ InputCollect <- robyn_inputs(
   , dep_var = "revenue" # there should be only one dependent variable
   , dep_var_type = "revenue" # "revenue" (ROI) or "conversion" (CPA)
   , prophet_vars = c("trend", "season", "holiday") # "trend","season", "holiday"
-  , prophet_country = "DE" # input one country of dt_prophet_holidays
+  , prophet_country = "US" # input one country of dt_prophet_holidays
   , context_vars = c("competitor_sales_B", "events") # e.g. competitors, discount, unemployment etc
   , paid_media_spends = c("tv_S", "ooh_S", "print_S", "facebook_S", "search_S")
   , paid_media_vars = c("tv_S", "ooh_S","print_S","facebook_I","search_clicks_P")
@@ -92,8 +92,8 @@ InputCollect <- robyn_inputs(
   # than your total dates
   , window_start = "2016-01-31",
   , window_end = "2019-12-01",
-  , adstock = "weibull_pdf" # geometric, weibull_cdf or weibull_pdf
-  # , adstock = "geometric" # geometric, weibull_cdf or weibull_pdf
+  #  , adstock = "weibull_pdf" # geometric, weibull_cdf or weibull_pdf
+  , adstock = "geometric" # geometric, weibull_cdf or weibull_pdf
 )
 print(InputCollect)
 #### 2a-2: Second, define and add hyperparameters
@@ -118,63 +118,63 @@ hyper_limits()
 
 # Weibull PDF
 
-hyperparameters <- list(
-  facebook_S_alphas = c(.5, 3)
-  , facebook_S_gammas = c(0.3, 1)
-  , facebook_S_shapes = c(.0001, 10)
-  , facebook_S_scales = c(0, 0.1)
-
-  , newsletter_alphas = c(.5, 3)
-  , newsletter_gammas = c(0.3, 1)
-  , newsletter_shapes = c(.0001, 10)
-  , newsletter_scales = c(0, 0.1)
-
-  , ooh_S_alphas = c(.5, 3)
-  , ooh_S_gammas = c(0.3, 1)
-  , ooh_S_shapes = c(.0001, 10)
-  , ooh_S_scales = c(0, 0.1)
-
-  , print_S_alphas = c(.5, 3)
-  , print_S_gammas = c(0.3, 1)
-  , print_S_shapes = c(.0001, 10)
-  , print_S_scales= c(0, 0.1)
-
-  , search_S_alphas = c(.5, 3)
-  , search_S_gammas = c(0.3, 1)
-  , search_S_shapes = c(.0001, 10)
-  , search_S_scales = c(0, 0.1)
-
-  , tv_S_alphas = c(.5, 3)
-  , tv_S_gammas = c(0.3, 1)
-  , tv_S_shapes = c(.0001, 10)
-  , tv_S_scales = c(0, 0.1)
-
-  , train_size = c(0.5, 0.8)
-)
+# hyperparameters <- list(
+#   facebook_S_alphas = c(.5, 3)
+#   , facebook_S_gammas = c(0.3, 1)
+#   , facebook_S_shapes = c(.0001, 10)
+#   , facebook_S_scales = c(0, 0.1)
+#
+#   , newsletter_alphas = c(.5, 3)
+#   , newsletter_gammas = c(0.3, 1)
+#   , newsletter_shapes = c(.0001, 10)
+#   , newsletter_scales = c(0, 0.1)
+#
+#   , ooh_S_alphas = c(.5, 3)
+#   , ooh_S_gammas = c(0.3, 1)
+#   , ooh_S_shapes = c(.0001, 10)
+#   , ooh_S_scales = c(0, 0.1)
+#
+#   , print_S_alphas = c(.5, 3)
+#   , print_S_gammas = c(0.3, 1)
+#   , print_S_shapes = c(.0001, 10)
+#   , print_S_scales= c(0, 0.1)
+#
+#   , search_S_alphas = c(.5, 3)
+#   , search_S_gammas = c(0.3, 1)
+#   , search_S_shapes = c(.0001, 10)
+#   , search_S_scales = c(0, 0.1)
+#
+#   , tv_S_alphas = c(.5, 3)
+#   , tv_S_gammas = c(0.3, 1)
+#   , tv_S_shapes = c(.0001, 10)
+#   , tv_S_scales = c(0, 0.1)
+#
+#   , train_size = c(0.5, 0.8)
+# )
 
 # Geometric Distribution
 
-# hyperparameters <- list(
-#   facebook_S_alphas = c(0.1, 9),
-#   facebook_S_gammas = c(0.1, 1),
-#   facebook_S_thetas = c(0, 0.9),
-#   print_S_alphas = c(0.1, 9),
-#   print_S_gammas = c(0.1, 1),
-#   print_S_thetas = c(0, 0.9),
-#   tv_S_alphas = c(0.1, 9),
-#   tv_S_gammas = c(0.1, 1),
-#   tv_S_thetas = c(0, 0.9),
-#   search_S_alphas = c(0.1, 9),
-#   search_S_gammas = c(0.1, 1),
-#   search_S_thetas = c(0, 0.9),
-#   ooh_S_alphas = c(0.1, 9),
-#   ooh_S_gammas = c(0.1, 1),
-#   ooh_S_thetas = c(0, 0.9),
-#   newsletter_alphas = c(0.1, 9),
-#   newsletter_gammas = c(0.1, 1),
-#   newsletter_thetas = c(0, 0.9),
-#   train_size = c(0.5, 0.8)
-# )
+hyperparameters <- list(
+  facebook_S_alphas = c(0.1, 9),
+  facebook_S_gammas = c(0.1, 1),
+  facebook_S_thetas = c(0, 0.9),
+  print_S_alphas = c(0.1, 9),
+  print_S_gammas = c(0.1, 1),
+  print_S_thetas = c(0, 0.9),
+  tv_S_alphas = c(0.1, 9),
+  tv_S_gammas = c(0.1, 1),
+  tv_S_thetas = c(0, 0.9),
+  search_S_alphas = c(0.1, 9),
+  search_S_gammas = c(0.1, 1),
+  search_S_thetas = c(0, 0.9),
+  ooh_S_alphas = c(0.1, 9),
+  ooh_S_gammas = c(0.1, 1),
+  ooh_S_thetas = c(0, 0.9),
+  newsletter_alphas = c(0.1, 9),
+  newsletter_gammas = c(0.1, 1),
+  newsletter_thetas = c(0, 0.9),
+  train_size = c(0.5, 0.8)
+)
 
 #### 2a-3: Third, add hyperparameters into robyn_inputs()
 InputCollect <- robyn_inputs(InputCollect = InputCollect,
@@ -233,10 +233,10 @@ print(InputCollect)
 #### Step 3: Build initial model
 
 ## Run all trials and iterations. Use ?robyn_run to check parameter definition
-OtputModels <- robyn_run(
+OutputModels <- robyn_run(
   InputCollect = InputCollect # feed in all model specification
   , cores = parallel::detectCores() # default to all but one core?
-  , iterations = 2000 # can be increased if model is close to converging but
+  , iterations = 2500 # can be increased if model is close to converging but
   # does not
   , trials = 10 # same as above
   , ts_validation = TRUE, # 3-way-split time series for NRMSE validation.
@@ -524,3 +524,79 @@ response_sending$plot
 
 ## 4. Set individual hyperparameter bounds. They either contain two values e.g. c(0, 0.5),
 # or only one value, in which case you'd "fix" that hyperparameter.
+#
+# Input data has 208 weeks in total: 2015-11-23 to 2019-11-11
+# Initial model is built on rolling window of 198 week: 2016-02-01 to 2019-11-11
+# Time-series validation with default train_size range of 50%-80% of the data...
+# Using geometric adstocking with 20 hyperparameters (20 to iterate + 0 fixed) on 16 cores
+# >>> Starting 10 trials with 2500 iterations each using TwoPointsDE nevergrad algorithm...
+# Running trial 1 of 10
+# |==================================================================================================================================================| 100%
+# Finished in 4.41 mins
+# Running trial 2 of 10
+# |==================================================================================================================================================| 100%
+# Finished in 4.31 mins
+# Running trial 3 of 10
+# |==================================================================================================================================================| 100%
+# Finished in 4.55 mins
+# Running trial 4 of 10
+# |==================================================================================================================================================| 100%
+# Finished in 4.1 mins
+# Running trial 5 of 10
+# |==================================================================================================================================================| 100%
+# Finished in 4.46 mins
+# Running trial 6 of 10
+# |==================================================================================================================================================| 100%
+# Finished in 4.62 mins
+# Running trial 7 of 10
+# |==================================================================================================================================================| 100%
+# Finished in 4.59 mins
+# Running trial 8 of 10
+# |==================================================================================================================================================| 100%
+# Finished in 4.36 mins
+# Running trial 9 of 10
+# |==================================================================================================================================================| 100%
+# Finished in 3.89 mins
+# Running trial 10 of 10
+# |==================================================================================================================================================| 100%
+# Finished in 3.92 mins
+# - DECOMP.RSSD converged: sd@qt.20 0.092 <= 0.11 & |med@qt.20| 0.11 <= 0.19
+# - NRMSE converged: sd@qt.20 0.1 <= 0.37 & |med@qt.20| 0.27 <= 0.9
+# Total run time: 43.39 mins
+# > print(OutputModels)
+# Total trials: 10
+# Iterations per trial: 2500 (2512 real)
+# Runtime (minutes): 43.39
+# Cores: 16
+#
+# Updated Hyper-parameters:
+#   facebook_S_alphas: [0.1, 9]
+# facebook_S_gammas: [0.1, 1]
+# facebook_S_thetas: [0, 0.9]
+# newsletter_alphas: [0.1, 9]
+# newsletter_gammas: [0.1, 1]
+# newsletter_thetas: [0, 0.9]
+# ooh_S_alphas: [0.1, 9]
+# ooh_S_gammas: [0.1, 1]
+# ooh_S_thetas: [0, 0.9]
+# print_S_alphas: [0.1, 9]
+# print_S_gammas: [0.1, 1]
+# print_S_thetas: [0, 0.9]
+# search_S_alphas: [0.1, 9]
+# search_S_gammas: [0.1, 1]
+# search_S_thetas: [0, 0.9]
+# tv_S_alphas: [0.1, 9]
+# tv_S_gammas: [0.1, 1]
+# tv_S_thetas: [0, 0.9]
+# lambda: [0, 1]
+# train_size: [0.5, 0.8]
+#
+# Nevergrad Algo: TwoPointsDE
+# Intercept sign: non_negative
+# Time-series validation: TRUE
+# Penalty factor: FALSE
+# Refresh: FALSE
+#
+# Convergence on last quantile (iters 2386:2512):
+#   DECOMP.RSSD converged: sd@qt.20 0.092 <= 0.11 & |med@qt.20| 0.11 <= 0.19
+# NRMSE converged: sd@qt.20 0.1 <= 0.37 & |med@qt.20| 0.27 <= 0.9
