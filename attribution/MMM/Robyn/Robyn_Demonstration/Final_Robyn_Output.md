@@ -8,19 +8,19 @@ following two commands remove any previously installed H2O packages for
 R. Then we download packages H20 depends on.
 
 ``` r
-# pkgs <- c("RCurl","jsonlite")
-# for (pkg in pkgs) {
-#   if (! (pkg %in% rownames(installed.packages()))) { install.packages(pkg) }
-# }
+pkgs <- c("RCurl","jsonlite")
+for (pkg in pkgs) {
+  if (! (pkg %in% rownames(installed.packages()))) { install.packages(pkg) }
+}
 ```
 
 Downloading and initializing H20 for R.
 
 ``` r
-# install.packages("h2o", type="source", repos="https://h2o-release.s3.amazonaws.com/h2o/rel-zygmund/4/R")
-# install.packages("reticulate") # Install reticulate first if you haven't already
-# remotes::install_github("facebookexperimental/Robyn/R")
-# install.packages(c('nloptr', 'lares', 'dplyr', 'h2o', 'reticulate', 'tidyr'))
+install.packages("h2o", type="source", repos="https://h2o-release.s3.amazonaws.com/h2o/rel-zygmund/4/R")
+install.packages("reticulate") # Install reticulate first if you haven't already
+remotes::install_github("facebookexperimental/Robyn/R")
+install.packages(c('nloptr', 'lares', 'dplyr', 'h2o', 'reticulate', 'tidyr'))
 ```
 
 Calling the necessary libraries
@@ -81,10 +81,10 @@ library(h2o)
 Finally, initiate H20 and Nevergrad
 
 ``` r
-# h2o.init()
-# conda_create("r-reticulate")
-# conda_install("r-reticulate", "nevergrad", pip = TRUE)
-# use_condaenv("r-reticulate")
+h2o.init()
+conda_create("r-reticulate")
+conda_install("r-reticulate", "nevergrad", pip = TRUE)
+use_condaenv("r-reticulate")
 ```
 
 ## STEP 1: Data Creation
@@ -120,7 +120,7 @@ the program where to place the Robyn object.
 setwd('C:/Users/norri/Desktop/')
 Sys.setenv(R_FUTURE_FORK_ENABLE = TRUE) # Force multicore when using RStudio
 options(future.fork.enable = TRUE)
-df <- read.csv('robyn_final.csv', fileEncoding = 'UTF-8-BOM')
+df <- read.csv('df_knn_imputed.csv', fileEncoding = 'UTF-8-BOM')
 
 data("dt_prophet_holidays")
 head(dt_prophet_holidays)
@@ -140,7 +140,7 @@ I’ve found it’s best to set the full path to make sure this file is in
 the right spot and can be overwritten.
 
 ``` r
-robyn_object <- "C:/Users/norri/Desktop/MyRobyn.RDS"
+robyn_object <- "C:/Users/norri/Desktop/My_Robyn.RDS"
 ```
 
 ## STEP 2a: Four steps of model specification
@@ -158,18 +158,18 @@ InputCollect <- robyn_inputs(
   dt_holidays = dt_prophet_holidays,
   date_var = "DATE", # date format must be "2020-01-01, and must be in all caps"
   dep_var = "revenue", # there should be only one dependent variable
-  dep_var_type = "revenue", # "revenue" (ROI) or "conversion" (CPA)
+  dep_var_type = "conversion", # "revenue" (ROI) or "conversion" (CPA)
   prophet_vars = c("trend", "season", "holiday"), # "trend","season", "weekday" & "holiday"
   prophet_country = "US", # input one country. dt_prophet_holidays includes 59 countries by default
-  context_vars = c("cargill", 'inflation'), # e.g. competitors, discount, unemployment etc
-  paid_media_spends = c("banner_S", "blog_S", "coupon_S", "email_S"), # mandatory input
-  paid_media_vars = c("banner_I", "blog_I", "coupon_I", "email_I"), # mandatory.
+  # context_vars = c("cargill", 'inflation'), # e.g. competitors, discount, unemployment etc
+  paid_media_spends = c("LCM_Cost", "Paid_Search_Cost", "Dig_Coup_Cost"), # mandatory input
+  paid_media_vars = c("LCM_Imp", "Paid_Search_Imp", "Dig_Coupon_Imp"), # mandatory.
   # paid_media_vars must have same order as paid_media_spends. Use media exposure metrics like
   # impressions, GRP etc. If not applicable, use spend instead.
   # organic_vars = "newsletter", # marketing activity without media spend
   # factor_vars = c("events"), # force variables in context_vars or organic_vars to be categorical
-  window_start = "2019-10-14",
-  window_end = "2021-4-26",
+  window_start = "2021-02-08",
+  window_end = "2022-05-16",
   adstock = "weibull_pdf" # geometric, weibull_cdf or weibull_pdf.
 )
 ```
@@ -198,7 +198,7 @@ print(InputCollect)
     ## Custom parameters: None
     ## 
     ## Adstock: weibull_pdf
-    ## Hyper-parameters: [0;31mNot set yet[0m
+    ## Hyper-parameters: [0;31mNot set yet[0m
 
 ### 2a-2: Define and add hyperparameters
 
