@@ -13,11 +13,13 @@
     <content url="file://$USER_HOME$/AppData/Roaming/Python/Python39/site-packages/win32/lib">
       <sourceFolder url="file://$USER_HOME$/AppData/Roaming/Python/Python39/site-packages/win32/lib" isTestSource="false" />
     </content>
+    <content url="file://$MODULE_DIR$">
+      <excludeFolder url="file://$MODULE_DIR$/venv" />
+    </content>
     <content url="file://$MODULE_DIR$" />
     <content url="file://$MODULE_DIR$" />
     <content url="file://$MODULE_DIR$" />
-    <content url="file://$MODULE_DIR$" />
-    <orderEntry type="jdk" jdkName="6420_1 (2)" jdkType="Python SDK" />
+    <orderEntry type="jdk" jdkName="pymc_env" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
   </component>
   <component name="PackageRequirementsSettings">
