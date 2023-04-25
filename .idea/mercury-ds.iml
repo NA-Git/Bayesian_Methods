@@ -23,7 +23,8 @@
     <orderEntry type="sourceFolder" forTests="false" />
   </component>
   <component name="PackageRequirementsSettings">
-    <option name="requirementsPath" value="C:\Users\norri\anaconda3\pkgs\pip-21.2.4-py39haa95532_0\Lib\site-packages\pip\_internal\resolution\resolvelib\requirements.py" />
+    <option name="requirementsPath" value="C:\Users\norri\DataspellProjects\mercury-ds\attribution\MMM\PyMC\test3_requirements.txt" />
+    <option name="versionSpecifier" value="Strong equality (==x.y.z)" />
   </component>
   <component name="PyDocumentationSettings">
     <option name="renderExternalDocumentation" value="true" />
